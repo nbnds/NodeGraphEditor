@@ -1,0 +1,44 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.spec
+
+# VS Code settings
+.vscode/
+
+# PyInstaller cache and logs
+*.manifest
+*.spec
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+venv/
+.env/
+ENV/
+env/
+.venv/
+
+# Test/coverage outputs
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+
+# GitHub Actions artifacts
+*.exe
+
+# Ignore secrets (if you ever add them)
+secrets.*
