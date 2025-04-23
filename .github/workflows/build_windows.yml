@@ -38,6 +38,32 @@ jobs:
       # Wenn du Assets hast, f\u00fcge --add-data "pfad/zu/assets;assets" hinzu
       run: pyinstaller --onefile --windowed --name NodeGraphEditor main.py # Passe den Pfad zu main.py an, falls noetig
 
+    - name: Anwendung mit PyInstaller bauen
+      run: pyinstaller --onefile --windowed --name NodeGraphEditor main.py
+
+    # Release erstellen (nur bei Tag-Builds)
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # EXE zur Release-Seite hochladen (nur bei Tag-Builds)
+    - name: Upload Release Asset
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/NodeGraphEditor.exe
+        asset_name: NodeGraphEditor.exe
+        asset_content_type: application/octet-stream
+
     - name: Ausfuehchrbare Datei als Artifact hochladen
       # Speichert die gebaute .exe Datei, damit du sie herunterladen kannst.
       uses: actions/upload-artifact@v4
