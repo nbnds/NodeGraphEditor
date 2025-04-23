@@ -36,7 +36,7 @@ jobs:
       # F\u00fchrt den PyInstaller Befehl aus.
       # Pfad zu main.py muss korrekt sein relativ zum Root des ausgecheckten Codes.
       # Wenn du Assets hast, f\u00fcge --add-data "pfad/zu/assets;assets" hinzu
-      run: pyinstaller --onefile --windowed --name NodeGraphEditor NODEGRAPHEDITOR/main.py # Passe den Pfad zu main.py an, falls noetig
+      run: pyinstaller --onefile --windowed --name NodeGraphEditor main.py # Passe den Pfad zu main.py an, falls noetig
 
     - name: Ausfuehchrbare Datei als Artifact hochladen
       # Speichert die gebaute .exe Datei, damit du sie herunterladen kannst.
