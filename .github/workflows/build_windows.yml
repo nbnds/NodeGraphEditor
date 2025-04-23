@@ -56,12 +56,9 @@ jobs:
     # EXE zur Release-Seite hochladen (nur bei Tag-Builds)
     - name: Upload Release Asset
       if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/NodeGraphEditor.exe
-        asset_name: NodeGraphEditor.exe
-        asset_content_type: application/octet-stream
+        files: dist/NodeGraphEditor.exe
 
     - name: Ausführbare Datei als Artifact hochladen
       # Speichert die gebaute .exe Datei, damit du sie herunterladen kannst.
