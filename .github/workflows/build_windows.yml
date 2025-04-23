@@ -50,20 +50,14 @@ jobs:
         name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
+        files: dist/NodeGraphEditor.exe # Pfad zur EXE, die hochgeladen werden soll
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # EXE zur Release-Seite hochladen (nur bei Tag-Builds)
-    - name: Upload Release Asset
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v2
-      with:
-        files: dist/NodeGraphEditor.exe
-
-    - name: Ausführbare Datei als Artifact hochladen
-      # Speichert die gebaute .exe Datei, damit du sie herunterladen kannst.
+    
+    - name: Save built .exe as artifact
+      # Speichert die gebaute .exe Datei, damit du sie als Workflow-Artifact herunterladen kannst (zus\u00e4tzlich zur Release).
       uses: actions/upload-artifact@v4
       with:
-        name: NodeGraphEditor-windows # Name des Artifacts
-        path: dist/NodeGraphEditor.exe # Pfad zur gebauten Datei relativ zum Workspace
-        retention-days: 5 # Wie lange das Artifact aufbewahrt werden soll
+        name: NodeGraphEditor-windows
+        path: dist/NodeGraphEditor.exe
+        retention-days: 5
