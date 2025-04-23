@@ -14,7 +14,8 @@ jobs:
   build:
     # Auf welchem Runner soll der Job laufen? Für Windows Executables brauchen wir Windows.
     runs-on: windows-latest
-
+    permissions:
+      contents: write # Erlaubt dem Job, auf den Repository-Inhalt zuzugreifen notwendig für das Erstellen von Releases
     # Schritte des Jobs
     steps:
     - name: Code auschecken
