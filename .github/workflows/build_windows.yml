@@ -5,6 +5,7 @@ name: Build for Windows
 on:
   push:
     branches: [ main ] # Ausführen bei jedem Push auf den main Branch
+    tags: [ '*' ]   # <-- Das sorgt dafür, dass auch bei jedem Tag der Workflow läuft!
   pull_request:
     branches: [ main ] # Ausführen bei jedem Pull Request auf den main Branch
 
@@ -33,13 +34,10 @@ jobs:
         pip install pygame pyinstaller
 
     - name: Anwendung mit PyInstaller bauen
-      # F\u00fchrt den PyInstaller Befehl aus.
+      # Führt den PyInstaller Befehl aus.
       # Pfad zu main.py muss korrekt sein relativ zum Root des ausgecheckten Codes.
-      # Wenn du Assets hast, f\u00fcge --add-data "pfad/zu/assets;assets" hinzu
+      # Wenn du Assets hast, füge --add-data "pfad/zu/assets;assets" hinzu
       run: pyinstaller --onefile --windowed --name NodeGraphEditor main.py # Passe den Pfad zu main.py an, falls noetig
-
-    - name: Anwendung mit PyInstaller bauen
-      run: pyinstaller --onefile --windowed --name NodeGraphEditor main.py
 
     # Release erstellen (nur bei Tag-Builds)
     - name: Create Release
@@ -64,7 +62,7 @@ jobs:
         asset_name: NodeGraphEditor.exe
         asset_content_type: application/octet-stream
 
-    - name: Ausfuehchrbare Datei als Artifact hochladen
+    - name: Ausführbare Datei als Artifact hochladen
       # Speichert die gebaute .exe Datei, damit du sie herunterladen kannst.
       uses: actions/upload-artifact@v4
       with:
