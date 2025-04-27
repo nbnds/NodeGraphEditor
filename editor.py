@@ -169,12 +169,21 @@ class NodeEditor:
                 self.canvas_offset_y = self.pan_offset_start[1] + dy
 
     def handle_mouse_wheel(self, event):
+            # Get mouse position
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        # Convert to world coordinates before zoom
+        world_x_before = (mouse_x + self.canvas_offset_x * self.zoom) / self.zoom
+        world_y_before = (mouse_y + self.canvas_offset_y * self.zoom) / self.zoom
+
         old_zoom = self.zoom
         if event.y > 0:
             self.zoom = min(self.zoom * 1.1, 2.0)
         elif event.y < 0:
-            self.zoom = max(self.zoom / 1.1, 0.1)  # 0.1 = 1:10
-        # Optional: Zoom to mouse position (advanced)
+            self.zoom = max(self.zoom / 1.1, 0.1)
+
+        # After zoom, adjust offset so the world point under the mouse stays the same
+        self.canvas_offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
+        self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
     def handle_key_down(self, event):
         pass
