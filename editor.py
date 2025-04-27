@@ -69,9 +69,12 @@ class NodeEditor:
         btn = self.toolbar.get_clicked_button(x, y)
         if btn:
             if btn.action == "add_node":
-                node_x = TOOLBAR_WIDTH + 10 - self.canvas_offset_x
-                node_y = 60 - self.canvas_offset_y
-                self.nodes.append(Node(node_x, node_y, self.next_node_id))
+                # Place new node at the center of the visible canvas
+                center_x = self.screen.get_width() // 2
+                center_y = self.screen.get_height() // 2
+                world_x = (center_x + self.canvas_offset_x * self.zoom) / self.zoom
+                world_y = (center_y + self.canvas_offset_y * self.zoom) / self.zoom
+                self.nodes.append(Node(world_x, world_y, self.next_node_id))
                 self.next_node_id += 1
             elif btn.action == "delete_all":
                 self.nodes.clear()
