@@ -6,7 +6,7 @@ from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR,
 
 from node import Node
 from connection import Connection
-from toolbar import Toolbar
+from toolbar import Toolbar, ToolbarButton
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
 
@@ -37,6 +37,10 @@ class NodeEditor:
         self.button_h = 40
         self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = Toolbar()
+        self.toolbar.addButton(ToolbarButton(action="add_node", label="Add Node"))
+        self.toolbar.addButton(ToolbarButton(action="delete_all", label="Alle löschen"))
+        self.toolbar.addButton(ToolbarButton( action="save_graph", label="Speichern"))
+        self.toolbar.layout_buttons()
 
     def run(self):
         while True:
@@ -145,6 +149,9 @@ class NodeEditor:
 
     def handle_mouse_motion(self, event):
         x, y = event.pos
+        #Update hover state for toolbar buttons
+        for btn in self.toolbar.buttons:
+            btn.hovered = btn.rect.collidepoint(x, y)
         world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
         world_y = (y + self.canvas_offset_y * self.zoom) / self.zoom
         for node in self.nodes:

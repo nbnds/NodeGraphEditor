@@ -9,7 +9,7 @@ class Button:
         self.hovered = False
 
     def draw(self, screen, font):
-        pygame.draw.rect(screen, (180, 180, 180) if self.hovered else self.color, self.rect, border_radius=5)
+        pygame.draw.rect(screen, (255, 236, 150) if self.hovered else self.color, self.rect, width=1, border_radius=5)
         text = font.render(self.label, True, (255, 255, 255))
         screen.blit(text, (self.rect.x + 10, self.rect.y + 10))
 

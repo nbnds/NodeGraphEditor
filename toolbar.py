@@ -1,38 +1,49 @@
 import pygame
-from constants import GRAY, DARK_GRAY, WHITE, TOOLBAR_WIDTH, WINDOW_HEIGHT
+import constants as c 
 from button import Button
 
-NODE_TYPES = [
-    {"name": "Node", "color": (64, 64, 64)},
-    {"name": "Add", "color": (0, 200, 0)},
-    {"name": "Subtract", "color": (200, 0, 0)},
-]
 
 class ToolbarButton(Button):
-    def __init__(self, rect, label, color, action=None, node_type=None):
-        super().__init__(rect, label, color, action)
+
+    def __init__(self, color=c.GRAY, label="Default-Button", action=None, node_type=None):
+        super().__init__(pygame.Rect(0, 0, 0, 0), label, color, action)
         self.node_type = node_type  # Nur für Knotentyp-Buttons
 
 class Toolbar:
-    def __init__(self, node_types=NODE_TYPES):
+    def __init__(self):
+        self.bg_color = c.TOOLBAR_BG_COLOR
         self.buttons = []
-        self._layout_buttons(node_types)
+        self.padding = 10
+        self.left_margin = c.TOOLBAR_BUTTON_LEFT_MARGIN
+        self.top_margin = c.TOOLBAR_BUTTON_TOP_MARGIN
+        self.min_width = c.TOOLBAR_WIDTH
+        self.width = self.min_width
+    
+    def addButton(self, button):
+        self.buttons.append(button)
 
-    def _layout_buttons(self, node_types):
-        top_padding = 10
-        for node_type in node_types:
-            rect = pygame.Rect(10, top_padding, 80, 40)
-            btn = ToolbarButton(rect, node_type["name"], node_type["color"], action="add_node", node_type=node_type)
-            self.buttons.append(btn)
-            top_padding += 50
-        # "Alle löschen"-Button
-        delete_rect = pygame.Rect(10, WINDOW_HEIGHT - 50, 80, 40)
-        delete_btn = ToolbarButton(delete_rect, "Alle löschen", (180, 50, 50), action="delete_all")
-        self.buttons.append(delete_btn)
+    def change_bg_color(self, color):
+        self.bg_color = color
+
+    def layout_buttons(self):
+        font = pygame.font.Font(None, c.TOOLBAR_BUTTON_FONT_SIZE)
+        max_width = self.min_width
+        for i, btn in enumerate(self.buttons):
+            text_width, text_height = font.size(btn.label)
+            btn_width = text_width + c.TOOLBAR_BUTTON_TEXT_PADDING_HORIZONTAL
+            btn_height = text_height + c.TOOLBAR_BUTTON_TEXT_PADDING_VERTICAL
+            # Set the button's width and height
+            x = self.left_margin
+            y = self.top_margin + i * (btn_height + self.padding)
+            btn.rect = pygame.Rect(x, y, btn_width, btn_height)
+            max_width = max(max_width, btn_width + self.left_margin * 2)
+        self.width  = max_width
+        self.button_width = max_width - self.left_margin * 2
 
     def draw(self, screen):
-        pygame.draw.rect(screen, GRAY, (0, 0, TOOLBAR_WIDTH, WINDOW_HEIGHT))
+        pygame.draw.rect(screen, self.bg_color, (0, 0, c.TOOLBAR_WIDTH, c.WINDOW_HEIGHT))
         font = pygame.font.Font(None, 24)
+        self.layout_buttons()
         for btn in self.buttons:
             btn.draw(screen, font)
 
