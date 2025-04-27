@@ -25,7 +25,7 @@ class NodeEditor:
         self.dragging_connection = False
         self.connection_start_node = None
         self.connection_end_pos = None
-        self.next_serial = 1
+        self.next_node_id = 1
         self.canvas_offset_x = 0
         self.canvas_offset_y = 0
         self.panning = False
@@ -71,12 +71,12 @@ class NodeEditor:
             if btn.action == "add_node":
                 node_x = TOOLBAR_WIDTH + 10 - self.canvas_offset_x
                 node_y = 60 - self.canvas_offset_y
-                self.nodes.append(Node(node_x, node_y, self.next_serial))
-                self.next_serial += 1
+                self.nodes.append(Node(node_x, node_y, self.next_node_id))
+                self.next_node_id += 1
             elif btn.action == "delete_all":
                 self.nodes.clear()
                 self.connections.clear()
-                self.next_serial = 1
+                self.next_node_id = 1
                 self.selected_node = None
             return
         
