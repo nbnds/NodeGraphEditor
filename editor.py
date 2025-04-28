@@ -1,5 +1,6 @@
 import pygame
 import sys
+import math
 from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, 
                         WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,  
                         BLUEPRINT_GRID_SIZE)
@@ -202,6 +203,7 @@ class NodeEditor:
         self.draw_connections()
         self.draw_nodes()
         self.draw_toolbar()
+        self.draw_offscreen_indicators()
         pygame.display.flip()
 
     def draw_grid(self):
@@ -234,3 +236,51 @@ class NodeEditor:
 
     def draw_toolbar(self):
         self.toolbar.draw(self.screen)
+    
+    def draw_offscreen_indicators(self):
+        screen_w = self.screen.get_width()
+        screen_h = self.screen.get_height()
+        margin = 0
+        rect_size = 16
+
+        for node in self.nodes:
+            # Welt- zu Bildschirmkoordinaten
+            screen_x = (node.x * self.zoom) - self.canvas_offset_x * self.zoom
+            screen_y = (node.y * self.zoom) - self.canvas_offset_y * self.zoom
+
+            # Prüfen, ob Node außerhalb des sichtbaren Bereichs liegt
+            if (TOOLBAR_WIDTH + margin < screen_x < screen_w - margin and
+                margin < screen_y < screen_h - margin):
+                continue  # Node ist sichtbar, kein Indikator nötig
+
+            # Richtung zum Node berechnen (vom Mittelpunkt des sichtbaren Bereichs)
+            center_x = TOOLBAR_WIDTH + (screen_w - TOOLBAR_WIDTH) // 2
+            center_y = screen_h // 2
+            dx = screen_x - center_x
+            dy = screen_y - center_y
+
+            # Normiere Richtung auf den Rand des Fensters
+            if dx == 0 and dy == 0:
+                continue  # Sollte nicht passieren
+
+            angle = math.atan2(dy, dx)
+            # Bestimme Schnittpunkt mit Fenster-Rand
+            # Links/Rechts
+            if abs(dx) > abs(dy * (screen_w / screen_h)):
+                if dx > 0:
+                    edge_x = screen_w - margin
+                else:
+                    edge_x = TOOLBAR_WIDTH + margin
+                edge_y = center_y + (edge_x - center_x) * math.tan(angle)
+            # Oben/Unten
+            else:
+                if dy > 0:
+                    edge_y = screen_h - margin
+                else:
+                    edge_y = margin
+                edge_x = center_x + (edge_y - center_y) / math.tan(angle)
+
+            # Draw yellow inidicator rect at edge
+            rect_x = int(edge_x - rect_size // 2)
+            rect_y = int(edge_y - rect_size // 2)
+            pygame.draw.rect(self.screen, (160, 160, 160), (rect_x, rect_y, rect_size, rect_size), width=1, border_radius=3)
