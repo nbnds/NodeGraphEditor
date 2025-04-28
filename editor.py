@@ -15,7 +15,7 @@ pygame.init()
 
 class NodeEditor:
     def __init__(self):
-        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
         self.nodes = []
@@ -49,6 +49,8 @@ class NodeEditor:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.VIDEORESIZE:
+                    self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_mouse_down(event)
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -212,16 +214,18 @@ class NodeEditor:
 
         # Grid (mit Zoom!)
         grid_size = BLUEPRINT_GRID_SIZE * self.zoom
+        screen_w = self.screen.get_width()
+        screen_h = self.screen.get_height()
         x_start = TOOLBAR_WIDTH - (self.canvas_offset_x % BLUEPRINT_GRID_SIZE) * self.zoom
         y_start = - (self.canvas_offset_y % BLUEPRINT_GRID_SIZE) * self.zoom
 
         x = x_start
-        while x < WINDOW_WIDTH:
-            pygame.draw.line(self.screen, BLUEPRINT_LINE_COLOR, (x, 0), (x, WINDOW_HEIGHT))
+        while x < screen_w:
+            pygame.draw.line(self.screen, BLUEPRINT_LINE_COLOR, (x, 0), (x, screen_h))
             x += grid_size
         y = y_start
-        while y < WINDOW_HEIGHT:
-            pygame.draw.line(self.screen, BLUEPRINT_LINE_COLOR, (TOOLBAR_WIDTH, y), (WINDOW_WIDTH, y))
+        while y < screen_h:
+            pygame.draw.line(self.screen, BLUEPRINT_LINE_COLOR, (TOOLBAR_WIDTH, y), (screen_w, y))
             y += grid_size
 
     def draw_connections(self):
