@@ -83,7 +83,7 @@ class NodeEditor:
                 world_x = (center_x + self.canvas_offset_x * self.zoom) / self.zoom
                 world_y = (center_y + self.canvas_offset_y * self.zoom) / self.zoom
                 self.nodes.append(Node(world_x, world_y, self.next_node_id))
-                self.nx_graph.add_node(self.next_node_id)
+                self.nx_graph.add_node(self.next_node_id, pos=(world_x, world_y))
                 self.next_node_id += 1
             elif btn.action == "delete_all":
                 self.nodes.clear()
@@ -176,6 +176,7 @@ class NodeEditor:
             if node.dragging:
                 node.x = world_x - node.drag_offset[0]
                 node.y = world_y - node.drag_offset[1]
+                self.nx_graph.nodes[node.id]['pos'] = (node.x, node.y)
         if self.panning:
             dx = (x - self.pan_start[0]) / self.zoom
             dy = (y - self.pan_start[1]) / self.zoom
