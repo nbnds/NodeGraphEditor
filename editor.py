@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import networkx as nx
 from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, 
                         WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,  
                         BLUEPRINT_GRID_SIZE)
@@ -18,6 +19,7 @@ class NodeEditor:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
+        self.nx_graph = nx.DiGraph()
         self.nodes = []
         self.connections = []
         self.selected_node = None
@@ -78,10 +80,12 @@ class NodeEditor:
                 world_x = (center_x + self.canvas_offset_x * self.zoom) / self.zoom
                 world_y = (center_y + self.canvas_offset_y * self.zoom) / self.zoom
                 self.nodes.append(Node(world_x, world_y, self.next_node_id))
+                self.nx_graph.add_node(self.next_node_id)
                 self.next_node_id += 1
             elif btn.action == "delete_all":
                 self.nodes.clear()
                 self.connections.clear()
+                self.nx_graph.clear()
                 self.next_node_id = 1
                 self.selected_node = None
             return
@@ -113,6 +117,7 @@ class NodeEditor:
                         if c.start_node != node and c.end_node != node
                     ]
                     self.nodes.remove(node)
+                    self.nx_graph.remove_node(node.id)
                     if self.selected_node == node:
                         self.selected_node = None
                     break
@@ -134,6 +139,7 @@ class NodeEditor:
                 )
                 if not already_connected:
                     self.connections.append(Connection(self.selected_node, clicked_node))
+                    self.nx_graph.add_edge(self.selected_node.id, clicked_node.id)
                 self.selected_node = None  # Markierung aufheben nach Verbindung
             # Canvas-Panning nur, wenn kein Node getroffen wurde
             elif clicked_node is None:
@@ -142,7 +148,7 @@ class NodeEditor:
                 self.pan_offset_start = (self.canvas_offset_x, self.canvas_offset_y)
 
     def handle_mouse_up(self, event):
-        if event.button == 1:
+        if event.button == pygame.BUTTON_LEFT:
             for node in self.nodes:
                 if node.dragging:
                     node.dragging = False
@@ -150,7 +156,7 @@ class NodeEditor:
                     if self.potential_select_node == node:
                         self.selected_node = node
                     self.potential_select_node = None
-        elif event.button == 3:
+        elif event.button == pygame.BUTTON_RIGHT:
             self.panning = False
 
     def handle_mouse_motion(self, event):
