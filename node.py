@@ -4,10 +4,10 @@ from constants import (NODE_WIDTH, NODE_HEIGHT,
                          RED, WHITE, CONNECTION_RADIUS)
 
 class Node:
-    def __init__(self, x, y, serial):
+    def __init__(self, x, y, id):
         self.x = x
         self.y = y
-        self.serial = serial
+        self.id = id
         self.width = NODE_WIDTH
         self.height = NODE_HEIGHT
         self.dragging = False
@@ -47,6 +47,6 @@ class Node:
         pygame.draw.circle(screen, RED, (int((self.get_output_pos()[0] - offset_x) * zoom), int((self.get_output_pos()[1] - offset_y) * zoom)), max(2, int(CONNECTION_RADIUS * zoom)))
         # Serial number
         font = pygame.font.Font(None, max(12, int(24 * zoom)))
-        text = font.render(str(self.serial), True, WHITE)
+        text = font.render(str(self.id), True, WHITE)
         text_rect = text.get_rect(center=(x + width // 2, y + height // 2))
         screen.blit(text, text_rect)

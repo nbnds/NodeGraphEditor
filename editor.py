@@ -2,6 +2,8 @@ import pygame
 import sys
 import math
 import networkx as nx
+from pprint import pprint
+from networkx.readwrite import json_graph
 from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, 
                         WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,  
                         BLUEPRINT_GRID_SIZE)
@@ -43,6 +45,7 @@ class NodeEditor:
         self.toolbar.addButton(ToolbarButton(action="add_node", label="Add Node"))
         self.toolbar.addButton(ToolbarButton(action="delete_all", label="Alle löschen"))
         self.toolbar.addButton(ToolbarButton( action="save_graph", label="Speichern"))
+        self.toolbar.addButton(ToolbarButton( action="dump_graph", label="PRINT"))
         self.toolbar.layout_buttons()
 
     def run(self):
@@ -88,6 +91,9 @@ class NodeEditor:
                 self.nx_graph.clear()
                 self.next_node_id = 1
                 self.selected_node = None
+            elif btn.action == "dump_graph":
+                pprint(json_graph.node_link_data(self.nx_graph))
+                print("======================")
             return
         
         world_x, world_y = self.screen_to_world(x, y)
