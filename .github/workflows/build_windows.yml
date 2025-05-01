@@ -32,11 +32,25 @@ jobs:
       # Wenn du eine requirements.txt hast, nutze: run: pip install -r requirements.txt
       run: |
         python -m pip install --upgrade pip
-        pip install pygame-ce pyinstaller networkx
+        pip install pytest pygame-ce pyinstaller networkx
 
-    - name: Run Unit Tests
-      run: python -m unittest discover
+    - name: Run Unit Tests with Pytest
+      run: pytest --junitxml=test-results/report.xml
     
+    - name: Publish Test Results to GitHub Checks
+      # Verwendet eine spezielle GitHub Action, um den Report zu lesen und im UI anzuzeigen.
+      uses: EnricoMi/publish-unit-test-result-action/windows@v2
+      with:
+        # Der Pfad zur Report-Datei(en), die in Schritt vorher erstellt wurde(n).
+        # Glob-Muster sind erlaubt.
+        files: "test-results/**/*.xml"
+        # Optional: Gib dem Check einen aussagekräftigen Namen im GitHub UI
+        check_name: "Pytest Unit Tests Results"
+        # Optional: Weitere Konfiguration für die Anzeige der Ergebnisse
+        report_individual_runs: "true" # Zeigt Details zu einzelnen Testläufen an
+        # z.B. suite_summary: "Always" # Zeigt eine Zusammenfassung der Test-Suites
+        # z.B. failure_summary: "Truncate" # Beschränkt die Ausgabe bei vielen Fehlern
+
     - name: Anwendung mit PyInstaller bauen
       # Führt den PyInstaller Befehl aus.
       # Pfad zu main.py muss korrekt sein relativ zum Root des ausgecheckten Codes.
