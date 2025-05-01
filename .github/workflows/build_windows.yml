@@ -34,6 +34,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install pygame-ce pyinstaller
 
+    - name: Run Unit Tests
+      run: python -m unittest discover
+    
     - name: Anwendung mit PyInstaller bauen
       # Führt den PyInstaller Befehl aus.
       # Pfad zu main.py muss korrekt sein relativ zum Root des ausgecheckten Codes.
