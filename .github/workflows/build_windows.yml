@@ -32,7 +32,7 @@ jobs:
       # Wenn du eine requirements.txt hast, nutze: run: pip install -r requirements.txt
       run: |
         python -m pip install --upgrade pip
-        pip install pygame pyinstaller
+        pip install pygame-ce pyinstaller
 
     - name: Anwendung mit PyInstaller bauen
       # Führt den PyInstaller Befehl aus.
