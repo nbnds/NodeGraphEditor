@@ -16,6 +16,7 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write # Erlaubt dem Job, auf den Repository-Inhalt zuzugreifen notwendig für das Erstellen von Releases
+      checks: write # Erlaubt dem Job, die Ergebnisse der Tests als Checks zu veröffentlichen
     # Schritte des Jobs
     steps:
     - name: Code auschecken
