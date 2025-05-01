@@ -13,6 +13,15 @@ class Node:
         self.dragging = False
         self.drag_offset = (0, 0)
 
+    def get_right_center(self):
+        return (self.x + self.width, self.y + self.height / 2)
+    
+    def get_left_center(self):
+        return (self.x, self.y + self.height / 2)
+
+    def get_center(self):
+        return (self.x + self.width / 2, self.y + self.height / 2)   
+
     def get_input_pos(self):
         return (self.x, self.y + self.height // 2)
 
