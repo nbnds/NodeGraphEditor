@@ -2,9 +2,7 @@ import os
 import pytest
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 from editor import NodeEditor
-from node import Node
-from button import Button, Action
-from connection import Connection
+from button import Button
 from toolbar import Toolbar
 import pygame
 

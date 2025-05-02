@@ -2,13 +2,10 @@ import pygame
 import sys
 import math
 import networkx as nx
-from pprint import pprint
-from networkx.readwrite import json_graph
 from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, 
                         WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,  
                         BLUEPRINT_GRID_SIZE)
 
-from node import Node
 from connection import Connection
 from undo import UndoStack
 from toolbar import Toolbar
@@ -162,7 +159,6 @@ class NodeEditor:
         world_x_before = (mouse_x + self.canvas_offset_x * self.zoom) / self.zoom
         world_y_before = (mouse_y + self.canvas_offset_y * self.zoom) / self.zoom
 
-        old_zoom = self.zoom
         if event.y > 0:
             self.zoom = min(self.zoom * 1.1, 2.0)
         elif event.y < 0:
