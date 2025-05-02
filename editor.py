@@ -90,11 +90,12 @@ class NodeEditor:
                     node.selected = False
 
         elif event.button == pygame.BUTTON_MIDDLE:
-            # Prüfe, ob auf eine Kante geklickt wurde
-            if self.try_delete_connection(world_x, world_y):
-                return
             # Prüfe ob auf einen Knoten geklickt wurde
-            self.try_delete_node(world_x, world_y)
+            if self.try_delete_node(world_x, world_y):
+                return
+            # Prüfe, ob auf eine Kante geklickt wurde
+            self.try_delete_connection(world_x, world_y)
+
   
         elif event.button == pygame.BUTTON_RIGHT:
             # Prüfe, ob ein Node unter dem Cursor ist
