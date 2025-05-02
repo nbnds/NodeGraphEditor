@@ -24,7 +24,6 @@ class NodeEditor:
         self.nx_graph = nx.DiGraph()
         self.nodes = []
         self.connections = []
-        self.selected_node = None
         self.selection = NodeSelection()    
         self.potential_select_node = None
         self.dragging_connection = False
@@ -78,19 +77,17 @@ class NodeEditor:
         
         world_x, world_y = self.screen_to_world(x, y)
         if event.button == pygame.BUTTON_LEFT:
-            # Linksklick: Prüfe, ob ein Node unter dem Cursor ist.
-            # Falls ja, aktiviere Dragging für diesen Node.
-            # Falls nein, hebe die aktuelle Node-Auswahl auf.
-            # x, y = event.pos
-            
+            clicked_node = None
             for node in reversed(self.nodes):
-                if node.contains_point(world_x, world_y):
+                if node.contains_point(world_x, world_y) and clicked_node is None:
                     node.dragging = True
                     node.drag_offset = (world_x - node.x, world_y - node.y)
+                    node.selected = True
                     self.potential_select_node = node
-                    break
-            else:
-                self.selected_node = None
+                    clicked_node = node
+                else:
+                    node.selected = False
+            if clicked_node is None:
                 self.potential_select_node = None
 
         elif event.button == pygame.BUTTON_MIDDLE:
@@ -107,18 +104,20 @@ class NodeEditor:
                 if node.contains_point(world_x, world_y):
                     clicked_node = node
                     break
-
+            selected_nodes = [n for n in self.nodes if n.selected]
             # Wenn ein Node markiert ist und ein anderer Node mit rechts geklickt wird, verbinde sie
-            if self.selected_node is not None and clicked_node is not None and self.selected_node != clicked_node:
+            if selected_nodes and clicked_node is not None and selected_nodes[0] != clicked_node:
+                selected_node = selected_nodes[0]
                 already_connected = any(
-                    (c.start_node == self.selected_node and c.end_node == clicked_node) or
-                    (c.start_node == clicked_node and c.end_node == self.selected_node)
+                    (c.start_node == selected_node and c.end_node == clicked_node) or
+                    (c.start_node == clicked_node and c.end_node == selected_node)
                     for c in self.connections
                 )
                 if not already_connected:
-                    self.connections.append(Connection(self.selected_node, clicked_node))
-                    self.nx_graph.add_edge(self.selected_node.id, clicked_node.id)
-                self.selected_node = None  # Markierung aufheben nach Verbindung
+                    self.connections.append(Connection(selected_node, clicked_node))
+                    self.nx_graph.add_edge(selected_node.id, clicked_node.id)
+                # Nach dem Verbinden Selektion aufheben
+                selected_node.selected = False
             # Canvas-Panning nur, wenn kein Node getroffen wurde
             elif clicked_node is None:
                 self.panning = True
@@ -132,7 +131,9 @@ class NodeEditor:
                     node.dragging = False
                     # Nur Markierung setzen, keine Verbindung!
                     if self.potential_select_node == node:
-                        self.selected_node = node
+                        for n in self.nodes:
+                            n.selected = False
+                        node.selected = True
                     self.potential_select_node = None
         elif event.button == pygame.BUTTON_RIGHT:
             self.panning = False
@@ -221,7 +222,7 @@ class NodeEditor:
     def draw_nodes(self):
         # Nodes
         for node in self.nodes:
-            node.draw(self.screen, self.canvas_offset_x, self.canvas_offset_y, selected=(node == self.selected_node), zoom=self.zoom)
+            node.draw(self.screen, self.canvas_offset_x, self.canvas_offset_y, zoom=self.zoom)
 
     def draw_toolbar(self):
         self.toolbar.draw(self.screen)
@@ -308,7 +309,6 @@ class NodeEditor:
                 ]
                 self.nodes.remove(node)
                 self.nx_graph.remove_node(node.id)
-                if self.selected_node == node:
-                    self.selected_node = None
+                node.selected = False  # Deselect the node if it was selected
                 return True
         return False

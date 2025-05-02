@@ -12,6 +12,7 @@ class Node:
         self.height = NODE_HEIGHT
         self.dragging = False
         self.drag_offset = (0, 0)
+        self.selected: bool = False
 
     def get_right_center(self):
         return (self.x + self.width, self.y + self.height / 2)
@@ -32,7 +33,7 @@ class Node:
         return (self.x <= x <= self.x + self.width and
                 self.y <= y <= self.y + self.height)
 
-    def draw(self, screen, offset_x=0, offset_y=0, selected=False, zoom=1.0):
+    def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
         x = int((self.x - offset_x) * zoom)
         y = int((self.y - offset_y) * zoom)
         width = int(self.width * zoom)
@@ -43,7 +44,7 @@ class Node:
             (x, y, width, height),
             border_radius=int(16 * zoom)
         )
-        border_color = (0, 255, 0) if selected else GRAY
+        border_color = (0, 255, 0) if self.selected else GRAY
         pygame.draw.rect(
             screen,
             border_color,
