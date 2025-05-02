@@ -1,5 +1,5 @@
 from node import Node
-
+from connection import Connection
 class Action:
     def execute(self, editor=None):
         pass  # Basisklasse für Aktionen, die von Buttons ausgeführt werden
@@ -33,3 +33,20 @@ class DumpGraphAction(Action):
         from pprint import pprint
         pprint(json_graph.node_link_data(editor.nx_graph))
         print("======================")
+
+class UndoAction(Action):
+    def execute(self, editor):
+        prev_graph = editor.undo_stack.pop()
+        if prev_graph:
+            # Setze den Graphen zurück
+            editor.nx_graph = prev_graph
+            # Synchronisiere Nodes und Connections
+            editor.nodes.clear()
+            editor.connections.clear()
+            for node_id, data in editor.nx_graph.nodes(data=True):
+                pos = data.get('pos', (0, 0))
+                editor.nodes.append(Node(pos[0], pos[1], node_id))
+            for start, end in editor.nx_graph.edges():
+                start_node = next(n for n in editor.nodes if n.id == start)
+                end_node = next(n for n in editor.nodes if n.id == end)
+                editor.connections.append(Connection(start_node, end_node))

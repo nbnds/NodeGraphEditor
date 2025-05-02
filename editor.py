@@ -10,6 +10,7 @@ from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR,
 
 from node import Node
 from connection import Connection
+from undo import UndoStack
 from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
@@ -17,13 +18,14 @@ from settings import PANNING_FOLLOWS_MOUSE
 pygame.init()
 
 class NodeEditor:
-    def __init__(self, toolbar=None):
+    def __init__(self, toolbar=None, undo_depth=10):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
         self.nx_graph = nx.DiGraph()
         self.nodes = []
         self.connections = []
+        self.undo_stack = UndoStack(max_depth=undo_depth)
         self.selection = NodeSelection()
         self.dragging_connection = False
         self.connection_start_node = None
@@ -271,6 +273,7 @@ class NodeEditor:
     def try_delete_connection(self, world_x, world_y):
         for conn in self.connections:
             if conn.is_clicked(world_x, world_y, zoom=self.zoom):
+                self.undo_stack.push(self.nx_graph)
                 self.connections.remove(conn)
                 if self.nx_graph.has_edge(conn.start_node.id, conn.end_node.id):
                     self.nx_graph.remove_edge(conn.start_node.id, conn.end_node.id)
@@ -285,6 +288,7 @@ class NodeEditor:
                     c for c in self.connections
                     if c.start_node != node and c.end_node != node
                 ]
+                self.undo_stack.push(self.nx_graph)
                 self.nodes.remove(node)
                 self.nx_graph.remove_node(node.id)
                 node.selected = False  # Deselect the node if it was selected
