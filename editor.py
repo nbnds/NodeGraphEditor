@@ -24,8 +24,7 @@ class NodeEditor:
         self.nx_graph = nx.DiGraph()
         self.nodes = []
         self.connections = []
-        self.selection = NodeSelection()    
-        self.potential_select_node = None
+        self.selection = NodeSelection()
         self.dragging_connection = False
         self.connection_start_node = None
         self.connection_end_pos = None
@@ -83,12 +82,9 @@ class NodeEditor:
                     node.dragging = True
                     node.drag_offset = (world_x - node.x, world_y - node.y)
                     node.selected = True
-                    self.potential_select_node = node
                     clicked_node = node
                 else:
                     node.selected = False
-            if clicked_node is None:
-                self.potential_select_node = None
 
         elif event.button == pygame.BUTTON_MIDDLE:
             # Prüfe, ob auf eine Kante geklickt wurde
@@ -127,14 +123,7 @@ class NodeEditor:
     def handle_mouse_up(self, event):
         if event.button == pygame.BUTTON_LEFT:
             for node in self.nodes:
-                if node.dragging:
                     node.dragging = False
-                    # Nur Markierung setzen, keine Verbindung!
-                    if self.potential_select_node == node:
-                        for n in self.nodes:
-                            n.selected = False
-                        node.selected = True
-                    self.potential_select_node = None
         elif event.button == pygame.BUTTON_RIGHT:
             self.panning = False
 
