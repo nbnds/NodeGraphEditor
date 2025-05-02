@@ -83,6 +83,9 @@ class NodeEditor:
                     node.drag_offset = (world_x - node.x, world_y - node.y)
                     node.selected = True
                     clicked_node = node
+                    # --- Selected node should be always on top ---
+                    self.nodes.remove(node)
+                    self.nodes.append(node)
                 else:
                     node.selected = False
 
