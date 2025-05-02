@@ -10,14 +10,14 @@ from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR,
 
 from node import Node
 from connection import Connection
-from toolbar import Toolbar, ToolbarButton
+from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
 
 pygame.init()
 
 class NodeEditor:
-    def __init__(self):
+    def __init__(self, toolbar=None):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
@@ -41,11 +41,7 @@ class NodeEditor:
         self.button_w = 80
         self.button_h = 40
         self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
-        self.toolbar = Toolbar()
-        self.toolbar.addButton(ToolbarButton(action="add_node", label="Add Node"))
-        self.toolbar.addButton(ToolbarButton(action="delete_all", label="Alle löschen"))
-        self.toolbar.addButton(ToolbarButton( action="save_graph", label="Speichern"))
-        self.toolbar.addButton(ToolbarButton( action="dump_graph", label="PRINT"))
+        self.toolbar = toolbar if toolbar else Toolbar()
         self.toolbar.layout_buttons()
 
     def run(self):
@@ -76,24 +72,8 @@ class NodeEditor:
         x, y = event.pos
         btn = self.toolbar.get_clicked_button(x, y)
         if btn:
-            if btn.action == "add_node":
-                # Place new node at the center of the visible canvas
-                center_x = self.screen.get_width() // 2
-                center_y = self.screen.get_height() // 2
-                world_x = (center_x + self.canvas_offset_x * self.zoom) / self.zoom
-                world_y = (center_y + self.canvas_offset_y * self.zoom) / self.zoom
-                self.nodes.append(Node(world_x, world_y, self.next_node_id))
-                self.nx_graph.add_node(self.next_node_id, pos=(world_x, world_y))
-                self.next_node_id += 1
-            elif btn.action == "delete_all":
-                self.nodes.clear()
-                self.connections.clear()
-                self.nx_graph.clear()
-                self.next_node_id = 1
-                self.selected_node = None
-            elif btn.action == "dump_graph":
-                pprint(json_graph.node_link_data(self.nx_graph))
-                print("======================")
+            # Button wurde gedrückt, führe die zugehörige Aktion aus
+            btn.action.execute(self)
             return
         
         world_x, world_y = self.screen_to_world(x, y)
