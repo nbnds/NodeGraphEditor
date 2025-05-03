@@ -1,0 +1,19 @@
+[project]
+name = "nodegrapheditor"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pygame-ce",
+  "pyinstaller",
+  "networkx",
+]
+
+[tool.ruff]
+# Konfiguration für den Ruff Linter (entspricht dem Step "static code analysis with ruff")
+# Du kannst hier Regeln aktivieren/deaktivieren, Ignorierlisten definieren etc.
+# Eine einfache Konfiguration könnte so aussehen:
+lint.select = ["E", "W", "F"] # Aktiviere Error, Warning und PyFlakes Regeln
+lint.ignore = []
+line-length = 120
