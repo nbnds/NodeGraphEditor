@@ -1,5 +1,5 @@
 # Name des Workflows (wird im GitHub Actions Tab angezeigt)
-name: Build for Windows
+name: Create Artifacts
 
 # Wann soll der Workflow ausgeführt werden?
 on:
@@ -119,6 +119,9 @@ jobs:
 
       - name: Build with PyInstaller
         run: uv run pyinstaller --onefile --name NodeGraphEditor main.py
+
+      - name: Make binary executable
+        run: chmod +x dist/NodeGraphEditor 
 
       - name: Save built binary as artifact
         uses: actions/upload-artifact@v4
