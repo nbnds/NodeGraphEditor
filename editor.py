@@ -2,8 +2,8 @@ import pygame
 import sys
 import math
 import networkx as nx
-from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, 
-                        WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,  
+from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR,
+                        WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,
                         BLUEPRINT_GRID_SIZE)
 
 from connection import Connection
@@ -72,7 +72,7 @@ class NodeEditor:
             # Button wurde gedrückt, führe die zugehörige Aktion aus
             btn.action.execute(self)
             return
-        
+
         world_x, world_y = self.screen_to_world(x, y)
         if event.button == pygame.BUTTON_LEFT:
             clicked_node = None
@@ -95,7 +95,7 @@ class NodeEditor:
             # Prüfe, ob auf eine Kante geklickt wurde
             self.try_delete_connection(world_x, world_y)
 
-  
+
         elif event.button == pygame.BUTTON_RIGHT:
             # Prüfe, ob ein Node unter dem Cursor ist
             clicked_node = None
@@ -170,7 +170,7 @@ class NodeEditor:
 
     def handle_key_down(self, event):
         pass
-    
+
     def screen_to_world(self, x, y):
         """Wandelt Bildschirmkoordinaten in Weltkoordinaten um (berücksichtigt Zoom und Offset)."""
         world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
@@ -217,54 +217,67 @@ class NodeEditor:
 
     def draw_toolbar(self):
         self.toolbar.draw(self.screen)
-    
+
     def draw_offscreen_indicators(self):
         screen_w = self.screen.get_width()
         screen_h = self.screen.get_height()
+        color = (160, 160, 160)
         margin = 0
-        rect_size = 16
+        r_size = 16 # size of the indicator rect
+
+        def is_node_visible(screen_x, screen_y):
+            return (
+                TOOLBAR_WIDTH + margin < screen_x < screen_w - margin and
+                margin < screen_y < screen_h - margin
+            )
+
+        def get_screen_coords(node):
+            return (
+                (node.x * self.zoom) - self.canvas_offset_x * self.zoom,
+                (node.y * self.zoom) - self.canvas_offset_y * self.zoom,
+            )
+
+        center_x = TOOLBAR_WIDTH + (screen_w - TOOLBAR_WIDTH) // 2
+        center_y = screen_h // 2
 
         for node in self.nodes:
             # Welt- zu Bildschirmkoordinaten
-            screen_x = (node.x * self.zoom) - self.canvas_offset_x * self.zoom
-            screen_y = (node.y * self.zoom) - self.canvas_offset_y * self.zoom
+            screen_x, screen_y = get_screen_coords(node)
 
-            # Prüfen, ob Node außerhalb des sichtbaren Bereichs liegt
-            if (TOOLBAR_WIDTH + margin < screen_x < screen_w - margin and
-                margin < screen_y < screen_h - margin):
-                continue  # Node ist sichtbar, kein Indikator nötig
+            if is_node_visible(screen_x, screen_y):
+                continue
 
-            # Richtung zum Node berechnen (vom Mittelpunkt des sichtbaren Bereichs)
-            center_x = TOOLBAR_WIDTH + (screen_w - TOOLBAR_WIDTH) // 2
-            center_y = screen_h // 2
             dx = screen_x - center_x
             dy = screen_y - center_y
 
             # Normiere Richtung auf den Rand des Fensters
             if dx == 0 and dy == 0:
-                continue  # Sollte nicht passieren
+                continue  # should not happen, but just in case
 
             angle = math.atan2(dy, dx)
-            # Bestimme Schnittpunkt mit Fenster-Rand
-            # Links/Rechts
+
+            # Determine intersection with window edge
             if abs(dx) > abs(dy * (screen_w / screen_h)):
-                if dx > 0:
-                    edge_x = screen_w - margin
-                else:
-                    edge_x = TOOLBAR_WIDTH + margin
+                # Left/Right edge
+                edge_x = screen_w - margin if dx > 0 else TOOLBAR_WIDTH + margin
                 edge_y = center_y + (edge_x - center_x) * math.tan(angle)
             # Oben/Unten
             else:
-                if dy > 0:
-                    edge_y = screen_h - margin
-                else:
-                    edge_y = margin
+                # Top/Bottom edge
+                edge_y = screen_h - margin if dy > 0 else margin
                 edge_x = center_x + (edge_y - center_y) / math.tan(angle)
 
-            # Draw yellow inidicator rect at edge
-            rect_x = int(edge_x - rect_size // 2)
-            rect_y = int(edge_y - rect_size // 2)
-            pygame.draw.rect(self.screen, (160, 160, 160), (rect_x, rect_y, rect_size, rect_size), width=1, border_radius=3)
+            # Draw inidicator rect at edge
+            rect_x = int(edge_x - r_size // 2)
+            rect_y = int(edge_y - r_size // 2)
+            rect = pygame.Rect(rect_x, rect_y, r_size, r_size)
+            pygame.draw.rect(
+                self.screen,
+                color,
+                rect,
+                width=1,
+                border_radius=3
+                )
 
     def try_delete_connection(self, world_x, world_y):
         for conn in self.connections:
@@ -275,7 +288,7 @@ class NodeEditor:
                     self.nx_graph.remove_edge(conn.start_node.id, conn.end_node.id)
                 return True
         return False
-    
+
     def try_delete_node(self, world_x, world_y):
         for node in reversed(self.nodes):
             if node.contains_point(world_x, world_y):

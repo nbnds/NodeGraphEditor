@@ -17,13 +17,13 @@ class Button:
 
     def is_clicked(self, x, y):
         return self.rect.collidepoint(x, y)
-    
+
     def handle_click(self, x, y):
         self.action.execute()
-    
+
     def get_text_size(self):
         """Gibt die Größe des Labels mit der gegebenen Font zurück (Hilfsmethode für Layout)."""
         return self.font.size(self.label)
-    
+
     def __repr__(self):
         return f"Button(label='{self.label}', rect={self.rect})"

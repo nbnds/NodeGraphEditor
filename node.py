@@ -1,6 +1,6 @@
 import pygame
 from constants import (NODE_WIDTH, NODE_HEIGHT,
-                         DARK_GRAY, GRAY, BLUE, 
+                         DARK_GRAY, GRAY, BLUE,
                          RED, WHITE, CONNECTION_RADIUS)
 
 class Node:
@@ -16,12 +16,12 @@ class Node:
 
     def get_right_center(self):
         return (self.x + self.width, self.y + self.height / 2)
-    
+
     def get_left_center(self):
         return (self.x, self.y + self.height / 2)
 
     def get_center(self):
-        return (self.x + self.width / 2, self.y + self.height / 2)   
+        return (self.x + self.width / 2, self.y + self.height / 2)
 
     def get_input_pos(self):
         return (self.x, self.y + self.height // 2)
@@ -38,13 +38,18 @@ class Node:
         y = int((self.y - offset_y) * zoom)
         width = int(self.width * zoom)
         height = int(self.height * zoom)
+        border_radius = int(16 * zoom)
+        border_color = (0, 255, 0) if self.selected else GRAY
+
+        # Draw node background
         pygame.draw.rect(
             screen,
             DARK_GRAY,
             (x, y, width, height),
-            border_radius=int(16 * zoom)
+            border_radius=border_radius
         )
-        border_color = (0, 255, 0) if self.selected else GRAY
+
+        # Draw node border
         pygame.draw.rect(
             screen,
             border_color,
@@ -52,10 +57,23 @@ class Node:
             max(1, int(2 * zoom)),
             border_radius=int(16 * zoom)
         )
-        # Connection points
-        pygame.draw.circle(screen, BLUE, (int((self.get_input_pos()[0] - offset_x) * zoom), int((self.get_input_pos()[1] - offset_y) * zoom)), max(2, int(CONNECTION_RADIUS * zoom)))
-        pygame.draw.circle(screen, RED, (int((self.get_output_pos()[0] - offset_x) * zoom), int((self.get_output_pos()[1] - offset_y) * zoom)), max(2, int(CONNECTION_RADIUS * zoom)))
-        # Serial number
+
+        # Draw connection points
+        input_pos = self.get_input_pos()
+        output_pos = self.get_output_pos()
+        input_screen = (
+        int((input_pos[0] - offset_x) * zoom),
+        int((input_pos[1] - offset_y) * zoom),
+        )
+        output_screen = (
+        int((output_pos[0] - offset_x) * zoom),
+        int((output_pos[1] - offset_y) * zoom),
+        )
+        conn_radius = max(2, int(CONNECTION_RADIUS * zoom))
+        pygame.draw.circle(screen, BLUE, input_screen, conn_radius)
+        pygame.draw.circle(screen, RED, output_screen, conn_radius)
+
+        # Draw serial number
         font = pygame.font.Font(None, max(12, int(24 * zoom)))
         text = font.render(str(self.id), True, WHITE)
         text_rect = text.get_rect(center=(x + width // 2, y + height // 2))

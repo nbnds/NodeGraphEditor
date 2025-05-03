@@ -8,11 +8,18 @@ class Connection:
         self.end_node = end_node
 
     def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
-        start_pos = (int((self.start_node.get_output_pos()[0] - offset_x) * zoom), int((self.start_node.get_output_pos()[1] - offset_y) * zoom))
-        end_pos = (int((self.end_node.get_input_pos()[0] - offset_x) * zoom), int((self.end_node.get_input_pos()[1] - offset_y) * zoom))
+        start_pos = (
+            int((self.start_node.get_output_pos()[0] - offset_x) * zoom),
+            int((self.start_node.get_output_pos()[1] - offset_y) * zoom)
+        )
+        end_pos = (
+            int((self.end_node.get_input_pos()[0] - offset_x) * zoom),
+            int((self.end_node.get_input_pos()[1] - offset_y) * zoom)
+        )
+
         thickness = max(1, int(2 * zoom))
         pygame.draw.line(screen, WHITE, start_pos, end_pos, thickness)
-    
+
     def is_clicked(self, world_x, world_y, zoom=1.0, tolerance=10):
         x1, y1 = self.start_node.get_right_center()
         x2, y2 = self.end_node.get_left_center()

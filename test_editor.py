@@ -7,7 +7,7 @@ from connection import Connection
 import pygame
 
 class TestNodeEditor:
-    
+
     @pytest.fixture
     def editor(self):
         editor = NodeEditor()
@@ -18,7 +18,7 @@ class TestNodeEditor:
         return editor
 
     def test_add_node(self, editor):
-        """Test adding a node to the editor and the graph."""   
+        """Test adding a node to the editor and the graph."""
         initial_count = len(editor.nodes)
         editor.nodes.append(Node(100, 100, 1))
         editor.nx_graph.add_node(1, pos=(100, 100))
@@ -48,7 +48,7 @@ class TestNodeEditor:
         """If zoom=1 and offset=0, screen and world coordinates are identical."""
         assert editor.screen_to_world(100, 200) == (100, 200)
         assert editor.screen_to_world(0, 0) == (0, 0)
-    
+
     def test_offset_only(self, editor):
         """If offset is set, world coordinates shift accordingly."""
         editor.canvas_offset_x = 50

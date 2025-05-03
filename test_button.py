@@ -7,7 +7,7 @@ from toolbar import Toolbar
 import pygame
 
 class TestButton:
-    
+
     @pytest.fixture
     def toolbar(self):
         """Fixture to create a toolbar for testing."""
@@ -40,7 +40,7 @@ class TestButton:
     def test_button_initialization(self, editor, AddNodeButton):
         """Test the initialization of a button."""
         editor.toolbar.add_button(AddNodeButton)
-        assert len(editor.toolbar.buttons) == 1  
+        assert len(editor.toolbar.buttons) == 1
         assert editor.toolbar.buttons[-1].label == "<UNNAMED>"
         leftclick = pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(60, 60), button=pygame.BUTTON_LEFT)
         pygame.event.post(leftclick)
@@ -48,5 +48,3 @@ class TestButton:
         assert clicked_button is not None
         assert clicked_button.label == "<UNNAMED>"
         assert clicked_button.rect == pygame.Rect(50, 50, 30, 30)
-        
-        

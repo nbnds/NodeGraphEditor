@@ -1,5 +1,5 @@
 import pygame
-import constants as c 
+import constants as c
 
 
 class Toolbar:
@@ -11,7 +11,7 @@ class Toolbar:
         self.top_margin = c.TOOLBAR_BUTTON_TOP_MARGIN
         self.min_width = c.TOOLBAR_WIDTH
         self.width = self.min_width
-    
+
     def add_button(self, button):
         self.buttons.append(button)
 
