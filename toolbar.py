@@ -35,10 +35,11 @@ class Toolbar:
 
     def draw(self, screen):
         # Draw the toolbar background
+        height = screen.get_height()
         pygame.draw.rect(
             screen,
             self.bg_color,
-            (0, 0, self.width, c.WINDOW_HEIGHT))
+            (0, 0, self.width, height))
         self.layout_buttons()
         for btn in self.buttons:
             btn.draw(screen)
