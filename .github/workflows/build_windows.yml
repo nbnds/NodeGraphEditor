@@ -65,7 +65,7 @@ jobs:
       # Führt den PyInstaller Befehl aus.
       # Pfad zu main.py muss korrekt sein relativ zum Root des ausgecheckten Codes.
       # Wenn du Assets hast, füge --add-data "pfad/zu/assets;assets" hinzu
-      run: pyinstaller --onefile --windowed --name NodeGraphEditor main.py # Passe den Pfad zu main.py an, falls noetig
+      run: uv run pyinstaller --onefile --windowed --name NodeGraphEditor main.py # 
 
     # Release erstellen (nur bei Tag-Builds)
     - name: Zip EXE for Release
