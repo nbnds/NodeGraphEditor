@@ -130,12 +130,11 @@ jobs:
           path: dist/NodeGraphEditor
           retention-days: 5
 
-      - name: Zip binary for Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: vimtor/action-zip@v1.2
-        with:
-          files: dist/NodeGraphEditor
-          dest: dist/NodeGraphEditor-linux.zip
+      - name: Create tar.gz for Release
+        if: startsWith(github.ref, 'refs/tags/') 
+        run: |
+          cd dist
+          tar -czvf NodeGraphEditor-linux.tar.gz NodeGraphEditor
 
       - name: Create Release (Linux)
         if: startsWith(github.ref, 'refs/tags/')
@@ -145,6 +144,6 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-          files: dist/NodeGraphEditor-linux.zip
+          files: dist/NodeGraphEditor-linux.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
