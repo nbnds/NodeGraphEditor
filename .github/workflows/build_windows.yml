@@ -11,7 +11,7 @@ on:
 
 # Jobs, die ausgeführt werden sollen
 jobs:
-  build:
+  build_windows:
     # Auf welchem Runner soll der Job laufen? Für Windows Executables brauchen wir Windows.
     runs-on: windows-latest
     permissions:
