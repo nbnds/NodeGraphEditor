@@ -12,8 +12,11 @@ class Button:
 
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 236, 150) if self.hovered else self.color, self.rect, width=1, border_radius=5)
-        text = self.font.render(self.label, True, (255, 255, 255))
-        screen.blit(text, (self.rect.x + 10, self.rect.y + 10))
+        text_surface = self.font.render(self.label, True, (255, 255, 255))
+        text_rect = text_surface.get_rect()
+        text_rect.center = self.rect.center
+        text_rect.centery += 2
+        screen.blit(text_surface, text_rect)
 
     def is_clicked(self, x, y):
         return self.rect.collidepoint(x, y)
