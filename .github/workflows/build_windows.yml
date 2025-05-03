@@ -111,8 +111,8 @@ jobs:
       - name: Set up Python
         run: uv python install
 
-      - name: Install dependencies
-        run: uv pip install pytest pygame-ce pyinstaller networkx
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
 
       - name: Run Unit Tests with Pytest
         run: uv run pytest --junitxml=test-results/report.xml
