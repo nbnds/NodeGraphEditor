@@ -69,7 +69,7 @@ class NodeEditor:
         x, y = event.pos
         btn = self.toolbar.get_clicked_button(x, y)
         if btn:
-            # Button wurde gedrückt, führe die zugehörige Aktion aus
+            # Execute the action associated with the button
             btn.action.execute(self)
             return
 
@@ -89,22 +89,22 @@ class NodeEditor:
                     node.selected = False
 
         elif event.button == pygame.BUTTON_MIDDLE:
-            # Prüfe ob auf einen Knoten geklickt wurde
+            # Check if a node was clicked
             if self.try_delete_node(world_x, world_y):
                 return
-            # Prüfe, ob auf eine Kante geklickt wurde
+            # Check if a connection was clicked
             self.try_delete_connection(world_x, world_y)
 
 
         elif event.button == pygame.BUTTON_RIGHT:
-            # Prüfe, ob ein Node unter dem Cursor ist
+            # Check if a node is under the cursor
             clicked_node = None
             for node in reversed(self.nodes):
                 if node.contains_point(world_x, world_y):
                     clicked_node = node
                     break
             selected_nodes = [n for n in self.nodes if n.selected]
-            # Wenn ein Node markiert ist und ein anderer Node mit rechts geklickt wird, verbinde sie
+            # If a node is selected and another node is right-clicked, connect them
             if selected_nodes and clicked_node is not None and selected_nodes[0] != clicked_node:
                 selected_node = selected_nodes[0]
                 already_connected = any(
@@ -115,9 +115,9 @@ class NodeEditor:
                 if not already_connected:
                     self.connections.append(Connection(selected_node, clicked_node))
                     self.nx_graph.add_edge(selected_node.id, clicked_node.id)
-                # Nach dem Verbinden Selektion aufheben
+                # After connecting, deselect the node
                 selected_node.selected = False
-            # Canvas-Panning nur, wenn kein Node getroffen wurde
+            # Canvas panning only if no node was hit
             elif clicked_node is None:
                 self.panning = True
                 self.pan_start = (x, y)
@@ -153,7 +153,7 @@ class NodeEditor:
                 self.canvas_offset_y = self.pan_offset_start[1] + dy
 
     def handle_mouse_wheel(self, event):
-            # Get mouse position
+        # Get mouse position
         mouse_x, mouse_y = pygame.mouse.get_pos()
         # Convert to world coordinates before zoom
         world_x_before = (mouse_x + self.canvas_offset_x * self.zoom) / self.zoom
@@ -186,10 +186,10 @@ class NodeEditor:
         pygame.display.flip()
 
     def draw_grid(self):
-        # Hintergrund
+        # Background
         self.screen.fill(BLUEPRINT_COLOR)
 
-        # Grid (mit Zoom!)
+        # Grid with zoom
         grid_size = BLUEPRINT_GRID_SIZE * self.zoom
         screen_w = self.screen.get_width()
         screen_h = self.screen.get_height()
@@ -206,7 +206,7 @@ class NodeEditor:
             y += grid_size
 
     def draw_connections(self):
-        # Verbindungen
+        # Connections
         for connection in self.connections:
             connection.draw(self.screen, self.canvas_offset_x, self.canvas_offset_y, zoom=self.zoom)
 
@@ -241,7 +241,7 @@ class NodeEditor:
         center_y = screen_h // 2
 
         for node in self.nodes:
-            # Welt- zu Bildschirmkoordinaten
+            # COnvert world coordinates to screen coordinates
             screen_x, screen_y = get_screen_coords(node)
 
             if is_node_visible(screen_x, screen_y):
@@ -250,7 +250,7 @@ class NodeEditor:
             dx = screen_x - center_x
             dy = screen_y - center_y
 
-            # Normiere Richtung auf den Rand des Fensters
+            # Normalize direction to the edge of the window
             if dx == 0 and dy == 0:
                 continue  # should not happen, but just in case
 
@@ -261,13 +261,13 @@ class NodeEditor:
                 # Left/Right edge
                 edge_x = screen_w - margin if dx > 0 else TOOLBAR_WIDTH + margin
                 edge_y = center_y + (edge_x - center_x) * math.tan(angle)
-            # Oben/Unten
+            # Top/Bottom
             else:
                 # Top/Bottom edge
                 edge_y = screen_h - margin if dy > 0 else margin
                 edge_x = center_x + (edge_y - center_y) / math.tan(angle)
 
-            # Draw inidicator rect at edge
+            # Draw indicator rect at edge
             rect_x = int(edge_x - r_size // 2)
             rect_y = int(edge_y - r_size // 2)
             rect = pygame.Rect(rect_x, rect_y, r_size, r_size)
@@ -292,7 +292,7 @@ class NodeEditor:
     def try_delete_node(self, world_x, world_y):
         for node in reversed(self.nodes):
             if node.contains_point(world_x, world_y):
-                # Entferne alle Verbindungen zu diesem Knoten
+                # Remove all connections to/from this node
                 self.connections = [
                     c for c in self.connections
                     if c.start_node != node and c.end_node != node

@@ -2,12 +2,12 @@ from node import Node
 from connection import Connection
 class Action:
     def execute(self, editor=None):
-        pass  # Basisklasse für Aktionen, die von Buttons ausgeführt werden
+        pass  # Baseclass for actions
 
 class NoOpAction(Action):
     def execute(self, editor):
         print("No operation action executed.")
-        pass  # Keine Aktion, wenn kein Button gedrückt wird
+        pass  #  No operation action
 
 class AddNodeAction(Action):
     def execute(self, editor):
@@ -38,9 +38,9 @@ class UndoAction(Action):
     def execute(self, editor):
         prev_graph = editor.undo_stack.pop()
         if prev_graph:
-            # Setze den Graphen zurück
+            # Restore the previous graph state
             editor.nx_graph = prev_graph
-            # Synchronisiere Nodes und Connections
+            # Synchronize nodes and connections
             editor.nodes.clear()
             editor.connections.clear()
             for node_id, data in editor.nx_graph.nodes(data=True):

@@ -14,7 +14,7 @@ class TestNodeEditor:
         editor.zoom = 1.0
         editor.canvas_offset_x = 0
         editor.canvas_offset_y = 0
-        # Das konfigurierte Objekt zurückgeben
+        # Return the configured object
         return editor
 
     def test_add_node(self, editor):

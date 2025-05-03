@@ -6,7 +6,7 @@ class UndoStack:
         self.stack = deque(maxlen=max_depth)
 
     def push(self, nx_graph):
-        # Speichere eine tiefe Kopie des Graphen
+        # Save a deep copy of the graph to avoid modifying the original
         self.stack.append(copy.deepcopy(nx_graph))
 
     def pop(self):

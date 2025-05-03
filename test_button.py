@@ -19,7 +19,7 @@ class TestButton:
         toolbar.top_margin = 5
         toolbar.min_width = 100
         toolbar.width = 100
-        # Das konfigurierte Objekt zurückgeben
+        # Return the configured object
         return toolbar
 
     @pytest.fixture
@@ -28,7 +28,6 @@ class TestButton:
         editor.zoom = 1.0
         editor.canvas_offset_x = 0
         editor.canvas_offset_y = 0
-        # Das konfigurierte Objekt zurückgeben
         return editor
 
     @pytest.fixture

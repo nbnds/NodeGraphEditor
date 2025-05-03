@@ -12,9 +12,9 @@ dependencies = [
 ]
 
 [tool.ruff]
-# Konfiguration für den Ruff Linter (entspricht dem Step "static code analysis with ruff")
-# Du kannst hier Regeln aktivieren/deaktivieren, Ignorierlisten definieren etc.
-# Eine einfache Konfiguration könnte so aussehen:
-lint.select = ["E", "W", "F"] # Aktiviere Error, Warning und PyFlakes Regeln
+# Configuration for the Ruff Linter
+# You can enable/disable rules, define ignore lists, etc.
+# A simple configuration would look like this:
+lint.select = ["E", "W", "F"] # Enable Error, Warning and PyFlakes rules
 lint.ignore = []
 line-length = 120
