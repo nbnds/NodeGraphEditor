@@ -22,24 +22,30 @@ jobs:
     - name: Code auschecken
       uses: actions/checkout@v4 # Holt den Code aus deinem Repository
     
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+    
+    - name: Set up Python
+      run: uv python install
+
     - name: static code analysis with ruff
       uses: astral-sh/ruff-action@v3
     
-    - name: Python einrichten
-      # Richtet eine Python Umgebung ein. Wähle eine passende Version.
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x' # Verwende die neueste Python 3 Version
+#    - name: Python einrichten
+#      # Richtet eine Python Umgebung ein. Wähle eine passende Version.
+#      uses: actions/setup-python@v5
+#      with:
+#        python-version: '3.x' # Verwende die neueste Python 3 Version
 
-    - name: Install Dependencies
-      # Installiert Pygame und PyInstaller.
-      # Wenn du eine requirements.txt hast, nutze: run: pip install -r requirements.txt
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pygame-ce pyinstaller networkx
+#    - name: Install Dependencies
+#      # Installiert Pygame und PyInstaller.
+#      # Wenn du eine requirements.txt hast, nutze: run: pip install -r requirements.txt
+#      run: |
+#        python -m pip install --upgrade pip
+#        pip install pytest pygame-ce pyinstaller networkx
 
     - name: Run Unit Tests with Pytest
-      run: pytest --junitxml=test-results/report.xml
+      run: uv run pytest --junitxml=test-results/report.xml
     
     - name: Publish Test Results to GitHub Checks
       # Verwendet eine spezielle GitHub Action, um den Report zu lesen und im UI anzuzeigen.

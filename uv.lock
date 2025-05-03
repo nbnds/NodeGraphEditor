@@ -1,0 +1,200 @@
+version = 1
+revision = 2
+requires-python = ">=3.11"
+
+[[package]]
+name = "altgraph"
+version = "0.17.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/de/a8/7145824cf0b9e3c28046520480f207df47e927df83aa9555fb47f8505922/altgraph-0.17.4.tar.gz", hash = "sha256:1b5afbb98f6c4dcadb2e2ae6ab9fa994bbb8c1d75f4fa96d340f9437ae454406", size = 48418, upload-time = "2023-09-25T09:04:52.164Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4d/3f/3bc3f1d83f6e4a7fcb834d3720544ca597590425be5ba9db032b2bf322a2/altgraph-0.17.4-py2.py3-none-any.whl", hash = "sha256:642743b4750de17e655e6711601b077bc6598dbfa3ba5fa2b2a35ce12b508dff", size = 21212, upload-time = "2023-09-25T09:04:50.691Z" },
+]
+
+[[package]]
+name = "colorama"
+version = "0.4.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697, upload-time = "2022-10-25T02:36:22.414Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335, upload-time = "2022-10-25T02:36:20.889Z" },
+]
+
+[[package]]
+name = "iniconfig"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/97/ebf4da567aa6827c909642694d71c9fcf53e5b504f2d96afea02718862f3/iniconfig-2.1.0.tar.gz", hash = "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7", size = 4793, upload-time = "2025-03-19T20:09:59.721Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760", size = 6050, upload-time = "2025-03-19T20:10:01.071Z" },
+]
+
+[[package]]
+name = "macholib"
+version = "1.16.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "altgraph" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/95/ee/af1a3842bdd5902ce133bd246eb7ffd4375c38642aeb5dc0ae3a0329dfa2/macholib-1.16.3.tar.gz", hash = "sha256:07ae9e15e8e4cd9a788013d81f5908b3609aa76f9b1421bae9c4d7606ec86a30", size = 59309, upload-time = "2023-09-25T09:10:16.155Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/5d/c059c180c84f7962db0aeae7c3b9303ed1d73d76f2bfbc32bc231c8be314/macholib-1.16.3-py2.py3-none-any.whl", hash = "sha256:0e315d7583d38b8c77e815b1ecbdbf504a8258d8b3e17b61165c6feb60d18f2c", size = 38094, upload-time = "2023-09-25T09:10:14.188Z" },
+]
+
+[[package]]
+name = "networkx"
+version = "3.4.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/1d/06475e1cd5264c0b870ea2cc6fdb3e37177c1e565c43f56ff17a10e3937f/networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1", size = 2151368, upload-time = "2024-10-21T12:39:38.695Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b9/54/dd730b32ea14ea797530a4479b2ed46a6fb250f682a9cfb997e968bf0261/networkx-3.4.2-py3-none-any.whl", hash = "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f", size = 1723263, upload-time = "2024-10-21T12:39:36.247Z" },
+]
+
+[[package]]
+name = "nodegrapheditor"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "networkx" },
+    { name = "pygame-ce" },
+    { name = "pyinstaller" },
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "networkx" },
+    { name = "pygame-ce" },
+    { name = "pyinstaller" },
+    { name = "pytest" },
+]
+
+[[package]]
+name = "packaging"
+version = "25.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
+]
+
+[[package]]
+name = "pefile"
+version = "2023.2.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/78/c5/3b3c62223f72e2360737fd2a57c30e5b2adecd85e70276879609a7403334/pefile-2023.2.7.tar.gz", hash = "sha256:82e6114004b3d6911c77c3953e3838654b04511b8b66e8583db70c65998017dc", size = 74854, upload-time = "2023-02-07T12:23:55.958Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/55/26/d0ad8b448476d0a1e8d3ea5622dc77b916db84c6aa3cb1e1c0965af948fc/pefile-2023.2.7-py3-none-any.whl", hash = "sha256:da185cd2af68c08a6cd4481f7325ed600a88f6a813bad9dea07ab3ef73d8d8d6", size = 71791, upload-time = "2023-02-07T12:28:36.678Z" },
+]
+
+[[package]]
+name = "pluggy"
+version = "1.5.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/2d/02d4312c973c6050a18b314a5ad0b3210edb65a906f868e31c111dede4a6/pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1", size = 67955, upload-time = "2024-04-20T21:34:42.531Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/5f/e351af9a41f866ac3f1fac4ca0613908d9a41741cfcf2228f4ad853b697d/pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669", size = 20556, upload-time = "2024-04-20T21:34:40.434Z" },
+]
+
+[[package]]
+name = "pygame-ce"
+version = "2.5.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/aa/4b/c08d748c8b082cee786e09b65a126d391c39b28dc75e3cea036b4b47b9dd/pygame_ce-2.5.3.tar.gz", hash = "sha256:dc04f0bf1a270a84eb371556298a9902b9c4ab08137c9dd10ef03fa4e7fcbfed", size = 6987675, upload-time = "2025-02-09T12:37:49.06Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/dd/5fd5e5ed44c2a26a34ccd8ebde10a4bb42765dc2d08322ba76f9ba386ca5/pygame_ce-2.5.3-cp311-cp311-macosx_10_11_x86_64.whl", hash = "sha256:cae06a78dfa7845c3da5a4afd87f6388ccea24966768003d9f57df8543d4feef", size = 13725068, upload-time = "2025-02-09T12:35:02.599Z" },
+    { url = "https://files.pythonhosted.org/packages/36/76/e59240b28957cc0b35266c0eb0e162d64b879baf39e39b8f81cb50024cc6/pygame_ce-2.5.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:2c3c5506dec038cc0984393e76df067862907da9bfec7c7350fe573c4a4be50b", size = 12965495, upload-time = "2025-02-09T12:35:06.919Z" },
+    { url = "https://files.pythonhosted.org/packages/24/a2/1c92203e2e58b83c8a905bd2bcbcdbf3bd6601c3922699fe8b47a4b5c43e/pygame_ce-2.5.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e91f4e0124102b8f65ba7618a656416bdae2826a5b3ab922b41d2b6dd06b5cef", size = 13607060, upload-time = "2025-02-09T12:35:11.5Z" },
+    { url = "https://files.pythonhosted.org/packages/24/72/e046bc7ddd2f985cd6da6b25059a69b82e6b1c304a9c1093f9e4b8a32efd/pygame_ce-2.5.3-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:9d82ceee6f05cb8f5d600f1dbc691d69e78aed200a10ddf09135a5da61ee7d27", size = 14142295, upload-time = "2025-02-09T12:35:15.456Z" },
+    { url = "https://files.pythonhosted.org/packages/17/dc/fd9f264e54c7920f91a34956ae67fb888617f05c512d696bcc2b3c492587/pygame_ce-2.5.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d2cca1789ab4f3709c3b624743469a00753c5886f6cbd19d3f2f6c98571ad5a5", size = 13782729, upload-time = "2025-02-09T12:35:19.473Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/ab/1ee32c9436f1f1f6789304d2b815d35a0890171961727a9a804fbe137610/pygame_ce-2.5.3-cp311-cp311-win32.whl", hash = "sha256:7b476879726b875b4feaa8e7362e3fced74dd05ef8824b666e175db947973bf5", size = 11068575, upload-time = "2025-02-09T12:35:22.693Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/d0/de4a4f6e78c34d9f82f0faa541a5994cdd4e3e83f70f31d01f62652ec863/pygame_ce-2.5.3-cp311-cp311-win_amd64.whl", hash = "sha256:9fdaa6369506dc59a6f2dd76b839e1a3c262211137f5dcf9dd6d481618ccf43a", size = 11621383, upload-time = "2025-02-09T12:35:26.457Z" },
+    { url = "https://files.pythonhosted.org/packages/00/f6/3f01b97f77c8b8229d59a9a757c30cbd242c2c86690d3c7e23a017aae87d/pygame_ce-2.5.3-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:8f8ed4717295ee3d24c654ecfb008029417d1f51dcd3186f47656ff9488d43c1", size = 13718804, upload-time = "2025-02-09T12:35:30Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/7e/64e7e548f7af7a6fcf1d37b0ff613636bfd8a18c2f03ccc0a0356b59dc59/pygame_ce-2.5.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:32750dd7a9d952bfe09edc98c58415829794c47a7fdbc42acd37edc81599a294", size = 12971789, upload-time = "2025-02-09T12:35:33.241Z" },
+    { url = "https://files.pythonhosted.org/packages/19/2e/8d4c2d74b998075664409838530b005e326d88114e23d4be96615b005714/pygame_ce-2.5.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:683794536260c7334d3b11584ba7671413a2cc54c4e4172d54106d8fe5dfbfa4", size = 13592676, upload-time = "2025-02-09T12:35:36.518Z" },
+    { url = "https://files.pythonhosted.org/packages/26/5f/e1710daf7b2c9ad0b3e5698f1796ca79a30aecd43ed67afa3d22d51cf62d/pygame_ce-2.5.3-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:777e6cb3285bdc866ecc07be41e0a988ed1ff2cd6fd9fe651c2d514e1828238f", size = 14130707, upload-time = "2025-02-09T12:35:39.676Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/1e/cb165afd867aac48557c3048bac69976996193976482f6c60327d9a46197/pygame_ce-2.5.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:69ee891ac41587b96bff0373ef095c1a5589b256edcb5b3cfc62ef2646d394db", size = 13769425, upload-time = "2025-02-09T12:35:43.672Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/2e/0383b45c24ff8462a41c888d43f89843a1f8ff7dee07dd0bee1c96f4f4c6/pygame_ce-2.5.3-cp312-cp312-win32.whl", hash = "sha256:6a671e06f81b5c5e16aabe8fda6ddcbf3d500505ade8b55595d2a8a51d65449a", size = 11066625, upload-time = "2025-02-09T12:35:47.096Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/65/e91c5649f8e9d2a7ebe9c4865480103a522561453a5b8a6d2ae044a01d23/pygame_ce-2.5.3-cp312-cp312-win_amd64.whl", hash = "sha256:914ee1b38ad9c107ac4900aa491e4b0d22a1218645113afdb6028bed799eb27f", size = 11622299, upload-time = "2025-02-09T12:35:50.481Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/10/85e3a06b5b3dee5770e3ccb1d78ef629a4d220df14c5ca95774b30562241/pygame_ce-2.5.3-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:6a60622da82b16ebb5da95bd6f3a6fc41d312ec0505c9333ec0eeaed74c78123", size = 13712664, upload-time = "2025-02-09T12:35:54.599Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/dd/d3e6b15887eaf327594b63cd91fda96b3011d21a79368df4d82bbf23d4ac/pygame_ce-2.5.3-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:4326d7914a2ff8eea987bb4d16a1caa9a65921308eeb26c6d1f66cd6a1a5a930", size = 12965944, upload-time = "2025-02-09T12:35:58.624Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/e6/c7f80dd888a05f2290cc7ef0e492cca48cded0bf34073e57405e9757d35e/pygame_ce-2.5.3-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e2d25dd15fffc0e0e528d41941943b3775874aa66e171a5e8f86845fbc93518f", size = 13588585, upload-time = "2025-02-09T12:36:04.837Z" },
+    { url = "https://files.pythonhosted.org/packages/c2/65/ad9db36d76ed4706f547c957f127beb30f60fe76ccc8da8cbc4f364b015d/pygame_ce-2.5.3-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4f0c0e34008165b93a543d5ce526f8d6459662779c2f9ddc77ef3446329b2cc6", size = 14129006, upload-time = "2025-02-09T12:36:08.321Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/96/e33fad39c931805927b723519607e4b0d8ecec4690541d265a9141e19734/pygame_ce-2.5.3-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c3ccb1f170cc3fd52d4c4c8575e29689b90b04db089b3c3cbb331955fdde244f", size = 13765876, upload-time = "2025-02-09T12:36:12.57Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/d3/6c968e7044f47ddcc277fc6790c64b0cf2f1f10c3ae5b07fe8c6b458a870/pygame_ce-2.5.3-cp313-cp313-win32.whl", hash = "sha256:6ed3cc5b1c1c2580579569f76b2109843429cc66ca68e8bc7d9e0eb4224cae00", size = 11064408, upload-time = "2025-02-09T12:36:20.659Z" },
+    { url = "https://files.pythonhosted.org/packages/32/ce/d6dae18f3c3ee07a80054145973ed1da4c7b413eab03c6008b81b42ecb5b/pygame_ce-2.5.3-cp313-cp313-win_amd64.whl", hash = "sha256:308f432559ae60ad04316777792d49df1f84f22bbb67a374a38ee15e8d97bdba", size = 11620106, upload-time = "2025-02-09T12:36:24.691Z" },
+]
+
+[[package]]
+name = "pyinstaller"
+version = "6.13.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "altgraph" },
+    { name = "macholib", marker = "sys_platform == 'darwin'" },
+    { name = "packaging" },
+    { name = "pefile", marker = "sys_platform == 'win32'" },
+    { name = "pyinstaller-hooks-contrib" },
+    { name = "pywin32-ctypes", marker = "sys_platform == 'win32'" },
+    { name = "setuptools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/b1/2949fe6d3874e961898ca5cfc1bf2cf13bdeea488b302e74a745bc28c8ba/pyinstaller-6.13.0.tar.gz", hash = "sha256:38911feec2c5e215e5159a7e66fdb12400168bd116143b54a8a7a37f08733456", size = 4276427, upload-time = "2025-04-15T23:25:31.646Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b4/02/d1a347d35b1b627da1e148159e617576555619ac3bb8bbd5fed661fc7bb5/pyinstaller-6.13.0-py3-none-macosx_10_13_universal2.whl", hash = "sha256:aa404f0b02cd57948098055e76ee190b8e65ccf7a2a3f048e5000f668317069f", size = 1001923, upload-time = "2025-04-15T23:24:17.646Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/80/6da39f7aeac65c9ca5afad0fac37887d75fdfd480178a7077c9d30b0704c/pyinstaller-6.13.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:92efcf2f09e78f07b568c5cb7ed48c9940f5dad627af4b49bede6320fab2a06e", size = 718135, upload-time = "2025-04-15T23:24:22.385Z" },
+    { url = "https://files.pythonhosted.org/packages/05/2c/d21d31f780a489609e7bf6385c0f7635238dc98b37cba8645b53322b7450/pyinstaller-6.13.0-py3-none-manylinux2014_i686.whl", hash = "sha256:9f82f113c463f012faa0e323d952ca30a6f922685d9636e754bd3a256c7ed200", size = 728543, upload-time = "2025-04-15T23:24:27.02Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/20/e6ca87bbed6c0163533195707f820f05e10b8da1223fc6972cfe3c3c50c7/pyinstaller-6.13.0-py3-none-manylinux2014_ppc64le.whl", hash = "sha256:db0e7945ebe276f604eb7c36e536479556ab32853412095e19172a5ec8fca1c5", size = 726868, upload-time = "2025-04-15T23:24:31.779Z" },
+    { url = "https://files.pythonhosted.org/packages/20/d5/53b19285f8817ab6c4b07c570208d62606bab0e5a049d50c93710a1d9dc6/pyinstaller-6.13.0-py3-none-manylinux2014_s390x.whl", hash = "sha256:92fe7337c5aa08d42b38d7a79614492cb571489f2cb0a8f91dc9ef9ccbe01ed3", size = 725037, upload-time = "2025-04-15T23:24:36.244Z" },
+    { url = "https://files.pythonhosted.org/packages/84/5b/08e0b305ba71e6d7cb247e27d714da7536895b0283132d74d249bf662366/pyinstaller-6.13.0-py3-none-manylinux2014_x86_64.whl", hash = "sha256:bc09795f5954135dd4486c1535650958c8218acb954f43860e4b05fb515a21c0", size = 721027, upload-time = "2025-04-15T23:24:40.16Z" },
+    { url = "https://files.pythonhosted.org/packages/1f/9c/d8d0a7120103471be8dbe1c5419542aa794b9b9ec2ef628b542f9e6f9ef0/pyinstaller-6.13.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:589937548d34978c568cfdc39f31cf386f45202bc27fdb8facb989c79dfb4c02", size = 723443, upload-time = "2025-04-15T23:24:50.63Z" },
+    { url = "https://files.pythonhosted.org/packages/52/c7/8a9d81569dda2352068ecc6ee779d5feff6729569dd1b4ffd1236ecd38fe/pyinstaller-6.13.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:b7260832f7501ba1d2ce1834d4cddc0f2b94315282bc89c59333433715015447", size = 719915, upload-time = "2025-04-15T23:24:54.917Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/e6/cccadb02b90198c7ed4ffb8bc34d420efb72b996f47cbd4738067a602d65/pyinstaller-6.13.0-py3-none-win32.whl", hash = "sha256:80c568848529635aa7ca46d8d525f68486d53e03f68b7bb5eba2c88d742e302c", size = 1294997, upload-time = "2025-04-15T23:25:01.391Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/06/15cbe0e25d1e73d5b981fa41ff0bb02b15e924e30b8c61256f4a28c4c837/pyinstaller-6.13.0-py3-none-win_amd64.whl", hash = "sha256:8d4296236b85aae570379488c2da833b28828b17c57c2cc21fccd7e3811fe372", size = 1352714, upload-time = "2025-04-15T23:25:08.061Z" },
+    { url = "https://files.pythonhosted.org/packages/83/ef/74379298d46e7caa6aa7ceccc865106d3d4b15ac487ffdda2a35bfb6fe79/pyinstaller-6.13.0-py3-none-win_arm64.whl", hash = "sha256:d9f21d56ca2443aa6a1e255e7ad285c76453893a454105abe1b4d45e92bb9a20", size = 1293589, upload-time = "2025-04-15T23:25:14.523Z" },
+]
+
+[[package]]
+name = "pyinstaller-hooks-contrib"
+version = "2025.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "setuptools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/18/46/195324574e44e52c1ba7f7b0607bc9d488b057d93e253918f1a2759d6a98/pyinstaller_hooks_contrib-2025.3.tar.gz", hash = "sha256:af129da5cd6219669fbda360e295cc822abac55b7647d03fec63a8fcf0a608cf", size = 162501, upload-time = "2025-04-16T16:56:11.168Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9a/98/0273ffc4f85a4038c8d316a75ef5ac1f10f1bbe5ba50c27871b73da2e3d2/pyinstaller_hooks_contrib-2025.3-py3-none-any.whl", hash = "sha256:70cba46b1a6b82ae9104f074c25926e31f3dde50ff217434d1d660355b949683", size = 434307, upload-time = "2025-04-16T16:56:09.862Z" },
+]
+
+[[package]]
+name = "pytest"
+version = "8.3.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "iniconfig" },
+    { name = "packaging" },
+    { name = "pluggy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ae/3c/c9d525a414d506893f0cd8a8d0de7706446213181570cdbd766691164e40/pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845", size = 1450891, upload-time = "2025-03-02T12:54:54.503Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/3d/64ad57c803f1fa1e963a7946b6e0fea4a70df53c1a7fed304586539c2bac/pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820", size = 343634, upload-time = "2025-03-02T12:54:52.069Z" },
+]
+
+[[package]]
+name = "pywin32-ctypes"
+version = "0.2.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/9f/01a1a99704853cb63f253eea009390c88e7131c67e66a0a02099a8c917cb/pywin32-ctypes-0.2.3.tar.gz", hash = "sha256:d162dc04946d704503b2edc4d55f3dba5c1d539ead017afa00142c38b9885755", size = 29471, upload-time = "2024-08-14T10:15:34.626Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/de/3d/8161f7711c017e01ac9f008dfddd9410dff3674334c233bde66e7ba65bbf/pywin32_ctypes-0.2.3-py3-none-any.whl", hash = "sha256:8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8", size = 30756, upload-time = "2024-08-14T10:15:33.187Z" },
+]
+
+[[package]]
+name = "setuptools"
+version = "80.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/24/65/19a02e93da9d9f118ecb311419a353ae68a8e236c057bf164c866daa227f/setuptools-80.2.0.tar.gz", hash = "sha256:16a390b41627e1455567193435e7cafa9101803ffaa2fdd9ecd0af098301981d", size = 1354232, upload-time = "2025-05-03T02:58:17.474Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/95/522fb99f76ecf2efe0a372ee02665a3cda1e5653b37514fd05c98f05a9cf/setuptools-80.2.0-py3-none-any.whl", hash = "sha256:5f982284ad5d644764e1985baca205e235651b55f9a7ea8d46878d37104aa5e5", size = 1240763, upload-time = "2025-05-03T02:58:14.874Z" },
+]

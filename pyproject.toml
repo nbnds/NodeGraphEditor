@@ -8,6 +8,7 @@ dependencies = [
   "pygame-ce",
   "pyinstaller",
   "networkx",
+  "pytest"
 ]
 
 [tool.ruff]
