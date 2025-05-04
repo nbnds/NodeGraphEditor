@@ -14,11 +14,13 @@ class Toolbar:
 
     def add_button(self, button):
         self.buttons.append(button)
+        self._layout_buttons()
+        return self.buttons[-1].rect.centerx, self.buttons[-1].rect.centery
 
     def change_toolbar_bg_color(self, color):
         self.bg_color = color
 
-    def layout_buttons(self):
+    def _layout_buttons(self):
         max_width = self.min_width
         for i, btn in enumerate(self.buttons):
             text_width, text_height = btn.get_text_size()
@@ -40,7 +42,7 @@ class Toolbar:
             screen,
             self.bg_color,
             (0, 0, self.width, height))
-        self.layout_buttons()
+
         for btn in self.buttons:
             btn.draw(screen)
 
