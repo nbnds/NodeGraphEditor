@@ -12,8 +12,6 @@ from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
 
-pygame.init()
-
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
@@ -23,7 +21,7 @@ class NodeEditor:
         self.nodes = []
         self.connections = []
         self.undo_stack = UndoStack(max_depth=undo_depth)
-        self.selection = NodeSelection()
+        self.selection = NodeSelection() # multiple selection of nodes
         self.dragging_connection = False
         self.connection_start_node = None
         self.connection_end_pos = None
@@ -33,37 +31,35 @@ class NodeEditor:
         self.panning = False
         self.pan_start = (0, 0)
         self.pan_offset_start = (0, 0)
-        self.button_x = 10
-        self.button_y = WINDOW_HEIGHT - 50
-        self.button_w = 80
-        self.button_h = 40
         self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
-        self.toolbar.layout_buttons()
 
     def run(self):
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.VIDEORESIZE:
-                    self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.handle_mouse_down(event)
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    self.handle_mouse_up(event)
-                elif event.type == pygame.MOUSEMOTION:
-                    self.handle_mouse_motion(event)
-                elif event.type == pygame.MOUSEWHEEL:
-                    self.handle_mouse_wheel(event)
-                elif event.type == pygame.KEYDOWN:
-                    self.handle_key_down(event)
-                elif event.type == pygame.DROPFILE:
-                    file_path = event.file
-                    pygame.display.set_caption(f"Node Graph Editor - {file_path}")
+                self.dispatch_event(event)
             self.draw()
             self.clock.tick(60)
+
+    def dispatch_event(self, event):
+            if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            elif event.type == pygame.VIDEORESIZE:
+                self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.handle_mouse_down(event)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.handle_mouse_up(event)
+            elif event.type == pygame.MOUSEMOTION:
+                self.handle_mouse_motion(event)
+            elif event.type == pygame.MOUSEWHEEL:
+                self.handle_mouse_wheel(event)
+            elif event.type == pygame.KEYDOWN:
+                self.handle_key_down(event)
+            elif event.type == pygame.DROPFILE:
+                file_path = event.file
+                pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_mouse_down(self, event):
         x, y = event.pos
