@@ -62,14 +62,13 @@ class NodeEditor:
                 pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_mouse_down(self, event):
-        x, y = event.pos
-        btn = self.toolbar.get_clicked_button(x, y)
+        btn = self.toolbar.get_clicked_button(event.pos)
         if btn:
             # Execute the action associated with the button
             btn.action.execute(self)
             return
 
-        world_x, world_y = self.screen_to_world(x, y)
+        world_x, world_y = self.screen_to_world(event.pos)
         if event.button == pygame.BUTTON_LEFT:
             clicked_node = None
             for node in reversed(self.nodes):
@@ -116,7 +115,7 @@ class NodeEditor:
             # Canvas panning only if no node was hit
             elif clicked_node is None:
                 self.panning = True
-                self.pan_start = (x, y)
+                self.pan_start = event.pos
                 self.pan_offset_start = (self.canvas_offset_x, self.canvas_offset_y)
 
     def handle_mouse_up(self, event):
@@ -167,8 +166,9 @@ class NodeEditor:
     def handle_key_down(self, event):
         pass
 
-    def screen_to_world(self, x, y):
+    def screen_to_world(self, pos):
         """Wandelt Bildschirmkoordinaten in Weltkoordinaten um (berücksichtigt Zoom und Offset)."""
+        x, y = pos
         world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
         world_y = (y + self.canvas_offset_y * self.zoom) / self.zoom
         return world_x, world_y

@@ -46,8 +46,8 @@ class Toolbar:
         for btn in self.buttons:
             btn.draw(screen)
 
-    def get_clicked_button(self, x, y):
+    def get_clicked_button(self, pos):
         for btn in self.buttons:
-            if btn.is_clicked(x, y):
+            if btn.is_clicked(pos):
                 return btn
         return None

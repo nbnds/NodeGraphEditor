@@ -1,11 +1,11 @@
 import os
 import pytest
-from conftest import lmb_down, lmb_up
+from conftest import lmb_down, lmb_up, mouse_move, rmb_down, rmb_up
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 from editor import NodeEditor
 from button import Button
 from toolbar import Toolbar
-from actions import AddNodeAction
+from actions import AddNodeAction, DeleteAllAction
 import pygame
 
 @pytest.fixture(scope="session", autouse=True)
@@ -15,8 +15,6 @@ def pygame_init():
     pygame.quit()
 
 class TestButton:
-
-
 
     @pytest.fixture
     def toolbar(self):
@@ -40,27 +38,20 @@ class TestButton:
         editor.canvas_offset_y = 0
         return editor
 
-    @pytest.fixture
-    def AddNodeButton(self):
-        """Fixture to create a button for testing."""
-        button = Button(rect=pygame.Rect(50, 50, 30, 30), label=None, action=AddNodeAction())
-        return button
 
-    def test_button_initialization(self, editor, AddNodeButton):
-        """Test the initialization of a button."""
-        editor.toolbar.add_button(AddNodeButton)
+    def test_toolbar_initialization(self, editor):
+        add_node_button = Button(rect=pygame.Rect(50, 50, 40, 40), label=None, action=AddNodeAction())
+        button_pos = editor.toolbar.add_button(add_node_button)
 
         assert len(editor.toolbar.buttons) == 1
         assert editor.toolbar.buttons[-1].label == "<UNNAMED>"
-        editor.dispatch_event(lmb_down((60, 60)))
-        editor.dispatch_event(lmb_down((60, 60)))
-        editor.dispatch_event(lmb_down((60, 60)))
-        clicked_button = editor.toolbar.get_clicked_button(60, 60)
-        print(editor.nodes[0].x, editor.nodes[0].y)
+        editor.dispatch_event(lmb_down(button_pos))
+        clicked_button = editor.toolbar.get_clicked_button(button_pos)  # Updated to use button_pos
+
         assert clicked_button is not None
         assert clicked_button.label == "<UNNAMED>"
-        assert clicked_button.rect == pygame.Rect(50, 50, 30, 30)
-        assert len(editor.nodes) == 3
+        assert len(editor.nodes) == 1
+
 
     def test_add_node_action_button(self, editor):
             add_node_btn = Button(action=AddNodeAction())
@@ -98,4 +89,70 @@ class TestButton:
         assert editor.nodes[-1].selected is False, "Expected the newly created node to be unselected"
         assert editor.nodes[-2].selected is True, "Expected the previously created node to stay selected"
 
+    def test_clear_all_action_button(self,editor):
+        """Test the Clear All action button."""
+        add_node_btn = Button(action=AddNodeAction())
+        add_node_btn_pos = editor.toolbar.add_button(add_node_btn)
+        clear_all_btn = Button(action=DeleteAllAction(), label="Clear All")
+        clear_all_btn_pos = editor.toolbar.add_button(clear_all_btn)
+        # add a node to the editor
+        editor.dispatch_event(lmb_down(add_node_btn_pos))
+        editor.dispatch_event(lmb_up(add_node_btn_pos))
+        # add second node to the editor
+        editor.dispatch_event(lmb_down(add_node_btn_pos))
+        editor.dispatch_event(lmb_up(add_node_btn_pos))
+        assert len(editor.nodes) == 2, "Expected two nodes to be created"
 
+        editor.dispatch_event(lmb_down(clear_all_btn_pos))
+        editor.dispatch_event(lmb_up(clear_all_btn_pos))
+
+        assert len(editor.nodes) == 0, "Expected all nodes to be cleared"
+        assert len(editor.connections) == 0, "Expected all connections to be cleared"
+        assert editor.next_node_id == 1, "Expected next_node_id to be reset to 1"
+
+    def test_clear_all_removes_connections(self,editor):
+        """Test the Clear All action button removes connections."""
+        add_node_btn = Button(action=AddNodeAction())
+        add_node_btn_pos = editor.toolbar.add_button(add_node_btn)
+        clear_all_btn = Button(action=DeleteAllAction(), label="Clear All")
+        clear_all_btn_pos = editor.toolbar.add_button(clear_all_btn)
+        # no connections should be present at the start
+        assert len(editor.connections) == 0, "no connections should be present at the start"
+
+        # add a node to the editor
+        editor.dispatch_event(lmb_down(add_node_btn_pos))
+        editor.dispatch_event(lmb_up(add_node_btn_pos))
+        first_node = editor.nodes[-1]
+
+        # move first node to select it
+        node_center = first_node.get_center()
+        editor.dispatch_event(lmb_down(node_center))
+        target_pos = node_center[0] + first_node.width + 50, node_center[1] # Move right by 50 pixels
+        editor.dispatch_event(mouse_move(node_center, (target_pos[0], target_pos[1]), buttons=(1, 0, 0)))
+        editor.dispatch_event(lmb_up(target_pos))
+        assert first_node.selected is True
+
+        # add second node to the editor
+        editor.dispatch_event(lmb_down(add_node_btn_pos))
+        editor.dispatch_event(lmb_up(add_node_btn_pos))
+        second_node = editor.nodes[-1]
+
+        assert second_node.selected is False, "Expected the newly created node to be unselected"
+        assert first_node.selected is True, "Expected the previously created node to stay selected"
+
+        # Check the second node is not at the same position as the first
+        # (most recent nodes are on top, hence the -1)
+        assert second_node.get_center() != editor.nodes[-2].get_center()
+
+        # create a connection between the two nodes
+        editor.dispatch_event(rmb_down(second_node.get_center()))
+        editor.dispatch_event(rmb_up(second_node.get_center()))
+
+        assert len(editor.connections) == 1, "Expected one connection to be created"
+
+        # click the Clear All button
+        editor.dispatch_event(lmb_down(clear_all_btn_pos))
+        editor.dispatch_event(lmb_up(clear_all_btn_pos))
+
+        assert len(editor.nodes) == 0, "Expected all nodes to be cleared"
+        assert len(editor.connections) == 0, "Expected all connections to be cleared"

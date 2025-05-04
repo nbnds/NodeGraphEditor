@@ -18,8 +18,8 @@ class Button:
         text_rect.centery += 2
         screen.blit(text_surface, text_rect)
 
-    def is_clicked(self, x, y):
-        return self.rect.collidepoint(x, y)
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos)
 
     def get_text_size(self):
         """Gibt die Größe des Labels mit der gegebenen Font zurück (Hilfsmethode für Layout)."""

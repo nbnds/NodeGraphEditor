@@ -46,23 +46,23 @@ class TestNodeEditor:
 
     def test_identity_no_zoom_no_offset(self, editor):
         """If zoom=1 and offset=0, screen and world coordinates are identical."""
-        assert editor.screen_to_world(100, 200) == (100, 200)
-        assert editor.screen_to_world(0, 0) == (0, 0)
+        assert editor.screen_to_world((100, 200)) == (100, 200)
+        assert editor.screen_to_world((0, 0)) == (0, 0)
 
     def test_offset_only(self, editor):
         """If offset is set, world coordinates shift accordingly."""
         editor.canvas_offset_x = 50
         editor.canvas_offset_y = 20
         # screen (0,0) maps to world (50,20)
-        assert editor.screen_to_world(0, 0) == (50, 20)
+        assert editor.screen_to_world((0, 0)) == (50, 20)
         # screen (100,200) maps to world (150,220)
-        assert editor.screen_to_world(100, 200), (150, 220)
+        assert editor.screen_to_world((100, 200)) == (150, 220)
 
     def test_zoom_functionality(self, editor):
         """If zoom is applied, world coordinates scale accordingly."""
         editor.zoom = 2.0
         # screen (100,200) maps to world (50,100)
-        assert editor.screen_to_world(100, 200) == (50, 100)
+        assert editor.screen_to_world((100, 200)) == (50, 100)
 
     def test_zoom_and_offset(self, editor):
         """If both zoom and offset are set, both effects combine."""
@@ -70,9 +70,9 @@ class TestNodeEditor:
         editor.canvas_offset_x = 10
         editor.canvas_offset_y = 20
         # screen (0,0) maps to world (10,20)
-        assert editor.screen_to_world(0, 0) == (10, 20)
+        assert editor.screen_to_world((0, 0)) == (10, 20)
         # screen (100,200) maps to world (60,120)
-        assert editor.screen_to_world(100, 200) == (60, 120)
+        assert editor.screen_to_world((100, 200)) == (60, 120)
 
     def test_screen_to_world_after_resize(self, editor):
         """After resizing the window, screen_to_world should still work as expected."""
@@ -83,9 +83,9 @@ class TestNodeEditor:
         editor.zoom = 1.0
         editor.canvas_offset_x = 0
         editor.canvas_offset_y = 0
-        assert editor.screen_to_world(100, 200) == (100, 200)
+        assert editor.screen_to_world((100, 200)) == (100, 200)
         # Now with offset and zoom
         editor.zoom = 2.0
         editor.canvas_offset_x = 10
         editor.canvas_offset_y = 20
-        assert editor.screen_to_world(100, 200) == (60, 120)
+        assert editor.screen_to_world((100, 200)) == (60, 120)
