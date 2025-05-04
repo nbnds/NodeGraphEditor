@@ -2,7 +2,7 @@ import pygame
 import sys
 import math
 import networkx as nx
-from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR,
+from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, WHITE,
                         WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,
                         BLUEPRINT_GRID_SIZE)
 
@@ -11,6 +11,7 @@ from undo import UndoStack
 from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
+from textinput import TextInputRenderer, TextInputEngine
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -33,12 +34,15 @@ class NodeEditor:
         self.pan_offset_start = (0, 0)
         self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
+        self.text_input_active = False
+        self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, manager=TextInputEngine())
 
     def run(self):
         while True:
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            for event in events:
                 self.dispatch_event(event)
-            self.draw()
+            self.draw(events)
             self.clock.tick(60)
 
     def dispatch_event(self, event):
@@ -60,6 +64,13 @@ class NodeEditor:
             elif event.type == pygame.DROPFILE:
                 file_path = event.file
                 pygame.display.set_caption(f"Node Graph Editor - {file_path}")
+
+    def handle_key_down(self, event):
+        if event.key == pygame.K_e and not self.text_input_active:
+            self.text_input_active = True
+        elif event.key == pygame.K_ESCAPE:
+            self.text_input_active = False
+            self.visualizer.clear_text()
 
     def handle_mouse_down(self, event):
         btn = self.toolbar.get_clicked_button(event.pos)
@@ -163,24 +174,21 @@ class NodeEditor:
         self.canvas_offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
         self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
-    def handle_key_down(self, event):
-        pass
-
-    def screen_to_world(self, pos):
-        """Wandelt Bildschirmkoordinaten in Weltkoordinaten um (berücksichtigt Zoom und Offset)."""
-        x, y = pos
-        world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
-        world_y = (y + self.canvas_offset_y * self.zoom) / self.zoom
-        return world_x, world_y
-
-    def draw(self):
+      
+    def draw(self, events):
         self.draw_grid()
         self.draw_connections()
         self.draw_nodes()
         self.draw_toolbar()
         self.draw_offscreen_indicators()
+        self.draw_text(events)
         pygame.display.flip()
 
+    def draw_text(self, events):
+        if self.text_input_active:
+            self.visualizer.update(events)
+            self.screen.blit(self.visualizer.surface, (200, 200))
+    
     def draw_grid(self):
         # Background
         self.screen.fill(BLUEPRINT_COLOR)
@@ -299,3 +307,10 @@ class NodeEditor:
                 node.selected = False  # Deselect the node if it was selected
                 return True
         return False
+
+    def screen_to_world(self, pos):
+        """Wandelt Bildschirmkoordinaten in Weltkoordinaten um (berücksichtigt Zoom und Offset)."""
+        x, y = pos
+        world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
+        world_y = (y + self.canvas_offset_y * self.zoom) / self.zoom
+        return world_x, world_y
