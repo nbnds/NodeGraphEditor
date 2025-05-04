@@ -18,3 +18,7 @@ dependencies = [
 lint.select = ["E", "W", "F"] # Enable Error, Warning and PyFlakes rules
 lint.ignore = []
 line-length = 120
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
