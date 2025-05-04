@@ -35,7 +35,7 @@ class NodeEditor:
         self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
-        self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, manager=TextInputEngine())
+        self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
 
     def run(self):
         while True:
@@ -174,7 +174,6 @@ class NodeEditor:
         self.canvas_offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
         self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
-      
     def draw(self, events):
         self.draw_grid()
         self.draw_connections()
@@ -188,7 +187,7 @@ class NodeEditor:
         if self.text_input_active:
             self.visualizer.update(events)
             self.screen.blit(self.visualizer.surface, (200, 200))
-    
+
     def draw_grid(self):
         # Background
         self.screen.fill(BLUEPRINT_COLOR)
