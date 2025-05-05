@@ -1,6 +1,6 @@
 import pygame
 from constants import (NODE_WIDTH, NODE_HEIGHT,
-                         DARK_GRAY, GRAY, BLUE,
+                         GRAY, BLUE,
                          RED, WHITE, CONNECTION_RADIUS)
 
 class Node:
@@ -40,15 +40,17 @@ class Node:
         height = int(self.height * zoom)
         border_radius = int(16 * zoom)
         border_color = (0, 255, 0) if self.selected else GRAY
-
+            # --- Create a temporary surface for transparency ---
+        node_surf = pygame.Surface((width, height), pygame.SRCALPHA)
+        alpha = 225  # 0=fully transparent, 255=opaque
         # Draw node background
         pygame.draw.rect(
-            screen,
-            DARK_GRAY,
-            (x, y, width, height),
+            node_surf,
+            (64, 64, 64, alpha),
+            (0, 0, width, height),
             border_radius=border_radius
         )
-
+        screen.blit(node_surf, (x, y))
         # Draw node border
         pygame.draw.rect(
             screen,
