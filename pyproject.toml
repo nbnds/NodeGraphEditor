@@ -20,5 +20,8 @@ lint.ignore = []
 line-length = 120
 
 [tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
 log_cli = true
 log_cli_level = "INFO"
