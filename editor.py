@@ -66,7 +66,7 @@ class NodeEditor:
                 pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_key_down(self, event):
-        if event.key == pygame.K_e and not self.text_input_active:
+        if event.key == pygame.K_TAB and not self.text_input_active:
             self.text_input_active = True
         elif event.key == pygame.K_ESCAPE:
             self.text_input_active = False
