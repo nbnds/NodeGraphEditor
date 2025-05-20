@@ -31,7 +31,7 @@ class DumpGraphAction(Action):
     def execute(self, editor):
         from networkx.readwrite import json_graph
         from pprint import pprint
-        pprint(json_graph.node_link_data(editor.nx_graph))
+        pprint(json_graph.node_link_data(editor.nx_graph, edges="edges"))
         print("======================")
 
 class UndoAction(Action):
