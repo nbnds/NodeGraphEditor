@@ -13,6 +13,8 @@ class Node:
         self.dragging = False
         self.drag_offset = (0, 0)
         self.selected: bool = False
+        self._cache_surface = None
+        self._cache_params = None  # (width, height, selected, zoom, id)
 
     def get_right_center(self):
         return (self.x + self.width, self.y + self.height / 2)
@@ -33,16 +35,9 @@ class Node:
         return (self.x <= x <= self.x + self.width and
                 self.y <= y <= self.y + self.height)
 
-    def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
-        x = int((self.x - offset_x) * zoom)
-        y = int((self.y - offset_y) * zoom)
-        width = int(self.width * zoom)
-        height = int(self.height * zoom)
-        border_radius = int(16 * zoom)
-        border_color = (0, 255, 0) if self.selected else GRAY
-            # --- Create a temporary surface for transparency ---
+    def _render_surface(self, width, height, border_radius, selected, zoom):
         node_surf = pygame.Surface((width, height), pygame.SRCALPHA)
-        alpha = 225  # 0=fully transparent, 255=opaque
+        alpha = 225
         # Draw node background
         pygame.draw.rect(
             node_surf,
@@ -50,33 +45,45 @@ class Node:
             (0, 0, width, height),
             border_radius=border_radius
         )
-        screen.blit(node_surf, (x, y))
         # Draw node border
+        border_color = (0, 255, 0) if selected else GRAY
         pygame.draw.rect(
-            screen,
+            node_surf,
             border_color,
-            (x, y, width, height),
+            (0, 0, width, height),
             max(1, int(2 * zoom)),
-            border_radius=int(16 * zoom)
+            border_radius=border_radius
         )
+        # Draw serial number
+        font = pygame.font.Font(None, max(12, int(24 * zoom)))
+        text = font.render(str(self.id), True, WHITE)
+        text_rect = text.get_rect(center=(width // 2, height // 2))
+        node_surf.blit(text, text_rect)
+        return node_surf
 
-        # Draw connection points
+    def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
+        x = int((self.x - offset_x) * zoom)
+        y = int((self.y - offset_y) * zoom)
+        width = int(self.width * zoom)
+        height = int(self.height * zoom)
+        border_radius = int(16 * zoom)
+        cache_params = (width, height, self.selected, zoom, self.id)
+        if self._cache_surface is None or self._cache_params != cache_params:
+            self._cache_surface = self._render_surface(width, height, border_radius, self.selected, zoom)
+            self._cache_params = cache_params
+        screen.blit(self._cache_surface, (x, y))
+
+        # Draw connection points (die ändern sich je nach Zoom/Position, daher nicht cachen)
         input_pos = self.get_input_pos()
         output_pos = self.get_output_pos()
         input_screen = (
-        int((input_pos[0] - offset_x) * zoom),
-        int((input_pos[1] - offset_y) * zoom),
+            int((input_pos[0] - offset_x) * zoom),
+            int((input_pos[1] - offset_y) * zoom),
         )
         output_screen = (
-        int((output_pos[0] - offset_x) * zoom),
-        int((output_pos[1] - offset_y) * zoom),
+            int((output_pos[0] - offset_x) * zoom),
+            int((output_pos[1] - offset_y) * zoom),
         )
         conn_radius = max(2, int(CONNECTION_RADIUS * zoom))
         pygame.draw.circle(screen, BLUE, input_screen, conn_radius)
         pygame.draw.circle(screen, RED, output_screen, conn_radius)
-
-        # Draw serial number
-        font = pygame.font.Font(None, max(12, int(24 * zoom)))
-        text = font.render(str(self.id), True, WHITE)
-        text_rect = text.get_rect(center=(x + width // 2, y + height // 2))
-        screen.blit(text, text_rect)
