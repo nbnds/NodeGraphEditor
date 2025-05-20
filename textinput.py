@@ -99,7 +99,9 @@ class TextInputEngine:
         pass
 
     def _process_other(self, event):
-        self.left += event.unicode
+        # Nur druckbare Zeichen akzeptieren (keine Steuerzeichen wie TAB, ESC, etc.)
+        if event.unicode and event.unicode.isprintable() and event.unicode not in ('\t', '\r', '\n'):
+            self.left += event.unicode
 
 
 class TextInputRenderer:
@@ -132,7 +134,9 @@ class TextInputRenderer:
             font_color = (0, 0, 0),
             cursor_blink_interval = 300,
             cursor_width = 1,
-            cursor_color = (0, 0, 0)
+            cursor_color = (0, 0, 0),
+            overlay_enabled = False,
+            overlay_color = (0, 0, 0, 128)
             ):
 
         self._manager = TextInputEngine() if engine is None else engine
@@ -150,6 +154,51 @@ class TextInputRenderer:
 
         self._surface = pygame.Surface((self._cursor_width, self._font_object.get_height()))
         self._rerender_required = True
+        self._overlay_enabled = overlay_enabled
+        self._overlay_color = overlay_color
+
+    @property
+    def overlay_enabled(self):
+        """ Get / set whether the overlay is enabled or not """
+        return self._overlay_enabled
+
+    @overlay_enabled.setter
+    def overlay_enabled(self, v):
+        """ Get / set whether the overlay is enabled or not """
+        self._overlay_enabled = v
+        self._require_rerender()
+
+    @property
+    def overlay_color(self):
+        """ Get / set the color of the overlay """
+        return self._overlay_color
+
+    @overlay_color.setter
+    def overlay_color(self, v):
+        """ Get / set the color of the overlay """
+        self._overlay_color = v
+        self._require_rerender()
+
+    def render_with_overlay(self, screen, events: List[pygame.event.Event]):
+        """
+        Render the overlay on top of the text input surface.
+        :param surface: The surface to render the overlay on
+        """
+        if self._overlay_enabled:
+            overlay_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            overlay_surface.fill(self._overlay_color)
+            screen.blit(overlay_surface, (0, 0))
+        self.update(events)
+        surface = self.surface
+        rect = surface.get_rect(center=screen.get_rect().center)
+        screen.blit(surface, rect)
+
+    def should_block_mouse(self):
+        """
+        Returns whether the overlay should block mouse events or not.
+        This is useful for overlaying the text input on top of other elements
+        """
+        return self._overlay_enabled
 
     @property
     def value(self):

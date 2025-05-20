@@ -40,9 +40,23 @@ class NodeEditor:
     def run(self):
         while True:
             events = pygame.event.get()
-            for event in events:
-                self.dispatch_event(event)
-            self.draw(events)
+            # Events für TextInput ggf. filtern
+            if self.text_input_active:
+                filtered_events = []
+                for event in events:
+                    # TAB/Escape nicht an TextInput weitergeben!
+                    if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
+                        self.handle_key_down(event)
+                        continue  # Nicht an TextInput weitergeben
+                    # Auch KEYUP für TAB/Escape rausfiltern!
+                    if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
+                        continue
+                    filtered_events.append(event)
+                self.draw(filtered_events)
+            else:
+                for event in events:
+                    self.dispatch_event(event)
+                self.draw(events)
             self.clock.tick(60)
 
     def dispatch_event(self, event):
@@ -185,8 +199,15 @@ class NodeEditor:
 
     def draw_text(self, events):
         if self.text_input_active:
-            self.visualizer.update(events)
-            self.screen.blit(self.visualizer.surface, (200, 200))
+            self.visualizer.overlay_enabled = True
+            self.visualizer.render_with_overlay(self.screen, events)
+            if self.visualizer.should_block_mouse():
+                pass
+        else:
+            self.visualizer.overlay_enabled = False
+            # Optional: falls du das Textfeld auch ohne Overlay anzeigen willst
+            # self.visualizer.update(events)
+            # self.screen.blit(self.visualizer.surface, (200, 200))
 
     def draw_grid(self):
         # Background
