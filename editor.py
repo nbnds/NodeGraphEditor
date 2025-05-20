@@ -14,12 +14,14 @@ from settings import PANNING_FOLLOWS_MOUSE
 from textinput import TextInputRenderer, TextInputEngine
 from typing import List
 from node import Node
+from fps_counter import FPSCounter
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
+        self.fps_counter = FPSCounter(pos=(0, self.screen.get_height()-40))
         self.nx_graph = nx.DiGraph()
         self.nodes: List[Node] = []
         self.connections = []
@@ -59,7 +61,13 @@ class NodeEditor:
                 for event in events:
                     self.dispatch_event(event)
                 self.draw(events)
-            self.clock.tick(60)
+
+            self.fps_counter.update(self.clock.get_fps())
+            self.fps_counter.draw(self.screen)
+
+
+            pygame.display.flip()
+            self.clock.tick()
 
     def dispatch_event(self, event):
             if event.type == pygame.QUIT:
