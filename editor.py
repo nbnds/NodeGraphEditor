@@ -12,6 +12,8 @@ from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
 from textinput import TextInputRenderer, TextInputEngine
+from typing import List
+from node import Node
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -19,7 +21,7 @@ class NodeEditor:
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
         self.nx_graph = nx.DiGraph()
-        self.nodes = []
+        self.nodes: List[Node] = []
         self.connections = []
         self.undo_stack = UndoStack(max_depth=undo_depth)
         self.selection = NodeSelection() # multiple selection of nodes
