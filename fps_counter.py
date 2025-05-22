@@ -10,20 +10,58 @@ class FPSCounter:
         self.pos = pos
         self.maxlen = maxlen
         self.last_update = time.time()
-        self.display_text = ""
         self.update_interval = update_interval
+        self._needs_redraw = True
+        self._displayed_text: str = "" # Der String, der aktuell gerendert wird
+        self._current_fps: float = 0.0
+        self._window_min_fps: float = 0.0 # Min-FPS im aktuellen Fenster
+        self._window_max_fps: float = 0.0 # Max-FPS im aktuellen Fenster
+        self._needs_redraw: bool = True
+        self._rendered_surf: pygame.Surface = None
 
-    def update(self, fps):
-        self.samples.append(fps)
+    def update(self, current_frame_fps: float):
+        """
+        Aktualisiert die FPS-Historie mit dem neuesten Wert
+        und berechnet die angezeigten Min/Max/Avg-Werte, wenn das Intervall erreicht ist.
+        """
+        if current_frame_fps > 0: # Vermeide das Hinzufügen von 0-Werten, die den Durchschnitt verfälschen
+            self.samples.append(current_frame_fps)
+
+        self._current_fps = current_frame_fps # Speichere den aktuellen FPS-Wert
+
         now = time.time()
-        if now - self.last_update > self.update_interval:
-            avg = sum(self.samples) / len(self.samples) if self.samples else 0
-            min_avg = min(self.samples) if self.samples else 0
-            max_avg = max(self.samples) if self.samples else 0
-            self.display_text = f"FPS: {avg:.1f} | Max: {max_avg:.1f} | Min: {min_avg:.1f}"
+        # Prüfe, ob es Zeit ist, den angezeigten Text zu aktualisieren
+        if now - self.last_update >= self.update_interval:
             self.last_update = now
 
-    def draw(self, screen):
-        if self.display_text:
-            surf = self.font.render(self.display_text, True, self.color)
-            screen.blit(surf, self.pos)
+            if not self.samples: # Wenn keine Samples vorhanden sind (z.B. ganz am Anfang)
+                new_text = "FPS: 0.0 | Max: 0.0 | Min: 0.0"
+                self._window_min_fps = 0.0
+                self._window_max_fps = 0.0
+            else:
+                # Berechne Min/Max/Avg im aktuellen Fenster
+                self._window_min_fps = min(self.samples)
+                self._window_max_fps = max(self.samples)
+                avg_fps = sum(self.samples) / len(self.samples)
+
+                # Formatiere den neuen Text
+                new_text = f"FPS: {avg_fps:5.1f} | Max: {self._window_max_fps:5.1f} | Min: {self._window_min_fps:5.1f}"
+
+            # Prüfe, ob sich der Text geändert hat, um unnötiges Neuzeichnen zu vermeiden
+            if new_text != self._displayed_text:
+                self._displayed_text = new_text
+                self._needs_redraw = True # Setze Flag, dass Text-Surface neu erstellt werden muss
+
+    def draw(self, screen: pygame.Surface):
+        """
+        Zeichnet den FPS-Zähler auf den Bildschirm.
+        """
+        if self._needs_redraw and self._displayed_text:
+            self._rendered_surf = self.font.render(self._displayed_text, True, self.color)
+            self._bg_rect = self._rendered_surf.get_rect(topleft=self.pos).inflate(12, 4)
+            self._needs_redraw = False
+
+        if self._rendered_surf:
+
+            pygame.draw.rect(screen, (0, 0, 0), self._bg_rect)
+            screen.blit(self._rendered_surf, self.pos)
