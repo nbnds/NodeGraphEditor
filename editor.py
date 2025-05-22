@@ -12,6 +12,7 @@ from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
 from textinput import TextInputRenderer, TextInputEngine
+from fps_counter import FPSCounter
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -36,6 +37,7 @@ class NodeEditor:
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
+        self.fps_counter = FPSCounter()
 
     def run(self):
         while True:
@@ -195,6 +197,7 @@ class NodeEditor:
         self.draw_toolbar()
         self.draw_offscreen_indicators()
         self.draw_text(events)
+        self.fps_counter.draw(self.screen, self.clock)
         pygame.display.flip()
 
     def draw_text(self, events):
