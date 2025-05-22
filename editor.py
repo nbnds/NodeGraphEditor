@@ -37,7 +37,7 @@ class NodeEditor:
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
-        self.fps_counter = FPSCounter()
+        self.fps_counter = FPSCounter(position='bottom-left')
 
     def run(self):
         while True:
@@ -197,7 +197,7 @@ class NodeEditor:
         self.draw_toolbar()
         self.draw_offscreen_indicators()
         self.draw_text(events)
-        self.fps_counter.draw(self.screen, self.clock)
+        self.fps_counter.draw(self.screen, self.clock, self.screen.get_height())
         pygame.display.flip()
 
     def draw_text(self, events):
