@@ -1,53 +1,67 @@
 import pygame
-import collections # Added
+import collections
 from constants import WHITE # Import WHITE from constants.py
 
 class FPSCounter:
-    def __init__(self, font_size=30, position='bottom-left', window_size=60): # Modified
+    def __init__(self, font_size=30, position='bottom-left', window_size=60, update_interval=0.5):
         pygame.font.init() # Ensure font module is initialized
         self.font = pygame.font.Font(None, font_size)
-        self.font_size = font_size # Added
-        self.position_config = position # Renamed to avoid conflict
+        self.font_size = font_size
+        self.position_config = position
         self.color = WHITE
-        self.fps_values = collections.deque(maxlen=window_size) # Added
-        self.min_fps = float('inf') # Added
-        self.max_fps = float('-inf') # Added
+        
+        self.fps_values = collections.deque(maxlen=window_size)
+        self.min_fps = float('inf')
+        self.max_fps = float('-inf')
+        
+        self.update_interval = update_interval  # seconds
+        self.last_update_time = 0 # milliseconds
+        self.fps_surface = None # Cache for the text surface
 
-    def draw(self, screen, clock, screen_height): # Modified
-        current_fps = clock.get_fps()
-        if current_fps == 0: # Avoid division by zero or skewed stats if FPS is 0
-            current_fps = 0.00001 # A very small number to prevent issues, will be rounded
+    def draw(self, screen, dt_ms, screen_height): # dt_ms is delta time in milliseconds
+        if dt_ms > 0:
+            current_potential_fps = 1000.0 / dt_ms
+        else:
+            # Avoid division by zero or if dt_ms is 0 (e.g. first frame or paused)
+            # We can show 0 or a very high number if it's truly paused.
+            # For now, let's assume if dt_ms is 0, potential fps is also 0 for this sample.
+            current_potential_fps = 0 
 
-        self.fps_values.append(current_fps)
+        self.fps_values.append(current_potential_fps)
 
-        if self.fps_values: # Ensure deque is not empty
+        # Update min/max based on the current window of values
+        if self.fps_values:
             self.min_fps = min(self.fps_values)
             self.max_fps = max(self.fps_values)
-        else:
-            # This case should ideally not be hit if window_size > 0 and we append before this
-            self.min_fps = current_fps
-            self.max_fps = current_fps
+        else: 
+            # This case would only be hit if window_size is 0
+            self.min_fps = current_potential_fps
+            self.max_fps = current_potential_fps
             
-        # Prevent displaying inf if fps_values was empty on first few frames or current_fps is 0.
-        display_min_fps = round(self.min_fps) if self.min_fps != float('inf') else round(current_fps)
-        display_max_fps = round(self.max_fps) if self.max_fps != float('-inf') else round(current_fps)
+        current_time = pygame.time.get_ticks() # current time in milliseconds
+        
+        # Update the FPS text surface only at the specified interval or if it's not yet created
+        if (current_time - self.last_update_time) >= (self.update_interval * 1000) or self.fps_surface is None:
+            # Handle cases where min_fps/max_fps might still be inf/-inf if fps_values was empty
+            display_min = round(self.min_fps) if self.min_fps != float('inf') else round(current_potential_fps)
+            display_max = round(self.max_fps) if self.max_fps != float('-inf') else round(current_potential_fps)
+            
+            # For "current" FPS, using the latest potential FPS value.
+            # Could also average self.fps_values for a smoother "current" display if desired.
+            display_current = round(current_potential_fps) 
 
-        # If current_fps was set to a tiny number, round it to 0 for display
-        display_current_fps = round(current_fps) if current_fps > 0.0001 else 0
+            fps_text = f"FPS: {display_current} (Min: {display_min}, Max: {display_max})"
+            self.fps_surface = self.font.render(fps_text, True, self.color)
+            self.last_update_time = current_time
 
-
-        fps_text = f"FPS: {display_current_fps} (Min: {display_min_fps}, Max: {display_max_fps})"
-        fps_surface = self.font.render(fps_text, True, self.color)
-
-        actual_position = (0,0)
-        if self.position_config == 'bottom-left':
-            actual_x = 10
-            # Adjust y by font_size and a small padding to prevent going off-screen
-            actual_y = screen_height - self.font_size - 5 
-            actual_position = (actual_x, actual_y)
-        elif isinstance(self.position_config, tuple):
-            actual_position = self.position_config
-        else: # Default to top-left if unknown config
-            actual_position = (10,10) # Default to top-left
-
-        screen.blit(fps_surface, actual_position)
+        if self.fps_surface:
+            actual_position = (0,0) # Default
+            if self.position_config == 'bottom-left':
+                actual_x = 10
+                actual_y = screen_height - self.font_size - 5 # 5px padding from bottom
+                actual_position = (actual_x, actual_y)
+            elif isinstance(self.position_config, tuple):
+                actual_position = self.position_config
+            else: # Default to top-left if unknown config or other string
+                actual_position = (10,10)
+            screen.blit(self.fps_surface, actual_position)

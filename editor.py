@@ -40,6 +40,7 @@ class NodeEditor:
         self.fps_counter = FPSCounter(position='bottom-left')
 
     def run(self):
+        dt = 0 # Initialize dt
         while True:
             events = pygame.event.get()
             # Events für TextInput ggf. filtern
@@ -54,12 +55,12 @@ class NodeEditor:
                     if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         continue
                     filtered_events.append(event)
-                self.draw(filtered_events)
+                self.draw(filtered_events, dt)
             else:
                 for event in events:
                     self.dispatch_event(event)
-                self.draw(events)
-            self.clock.tick(60)
+                self.draw(events, dt)
+            dt = self.clock.tick(60)
 
     def dispatch_event(self, event):
             if event.type == pygame.QUIT:
@@ -78,7 +79,7 @@ class NodeEditor:
             elif event.type == pygame.KEYDOWN:
                 self.handle_key_down(event)
             elif event.type == pygame.DROPFILE:
-                file_path = event.file
+                file_path = event.file # type: ignore
                 pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_key_down(self, event):
@@ -190,14 +191,14 @@ class NodeEditor:
         self.canvas_offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
         self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
-    def draw(self, events):
+    def draw(self, events, dt_ms):
         self.draw_grid()
         self.draw_connections()
         self.draw_nodes()
         self.draw_toolbar()
         self.draw_offscreen_indicators()
         self.draw_text(events)
-        self.fps_counter.draw(self.screen, self.clock, self.screen.get_height())
+        self.fps_counter.draw(self.screen, dt_ms, self.screen.get_height())
         pygame.display.flip()
 
     def draw_text(self, events):
