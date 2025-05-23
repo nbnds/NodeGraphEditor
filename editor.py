@@ -40,27 +40,58 @@ class NodeEditor:
         self.fps_counter = FPSCounter(position='bottom-left')
 
     def run(self):
-        dt = 0 # Initialize dt
+        actual_processing_dt_ms = 0 # Initialize to be passed for the first frame
+        frame_start_time = pygame.time.get_ticks() # Initialize for first frame's end calculation
+
         while True:
+            # --- Start of frame timing ---
+            # Note: pygame.time.get_ticks() used here for measuring frame duration.
+            # For the very first iteration, actual_processing_dt_ms is 0 (or initial value).
+            # For subsequent iterations, it's the processing time of the *previous* frame.
+            
             events = pygame.event.get()
-            # Events für TextInput ggf. filtern
-            if self.text_input_active:
-                filtered_events = []
-                for event in events:
-                    # TAB/Escape nicht an TextInput weitergeben!
+            for event in events:
+                # Combined event dispatching from the original run method
+                if self.text_input_active:
+                    # Filter for text input
                     if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         self.handle_key_down(event)
-                        continue  # Nicht an TextInput weitergeben
-                    # Auch KEYUP für TAB/Escape rausfiltern!
+                        # Skip passing this event to text input if it's TAB/ESCAPE
+                        continue 
                     if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
+                        # Also skip KEYUP for TAB/ESCAPE
                         continue
-                    filtered_events.append(event)
-                self.draw(filtered_events, dt)
-            else:
-                for event in events:
-                    self.dispatch_event(event)
-                self.draw(events, dt)
-            dt = self.clock.tick(60)
+                    # If not skipped, it will be part of 'events' passed to draw method if needed by text_input
+                else: # Not text_input_active, dispatch normally
+                     self.dispatch_event(event)
+
+            # --- Perform drawing and updates ---
+            # Pass the actual_processing_dt_ms from the *previous* frame for FPS calculation
+            # The 'events' list here is now the potentially filtered list if text_input_active
+            # or the original list if not.
+            # The draw method itself needs access to 'events' if text_input_active is true within draw.
+            # The original code passed 'filtered_events' or 'events' to draw.
+            # We need to replicate that logic for which events list to pass.
+            
+            # Determine which events list to pass to draw based on text_input_active
+            # This logic was originally split in the run method.
+            # Let's ensure the draw call gets the correct events.
+            # The event loop above already handles filtering for TAB/ESCAPE for text input.
+            # The text input processor itself (self.visualizer) might expect all other events.
+            
+            # The draw call itself handles self.text_input_active for text rendering.
+            # The events passed here are for self.visualizer.render_with_overlay(self.screen, events)
+            self.draw(events, actual_processing_dt_ms)
+
+            # --- End of frame processing measurement for FPS counter ---
+            current_time = pygame.time.get_ticks()
+            actual_processing_dt_ms = current_time - frame_start_time # Time spent in this frame
+
+            # --- Prepare for next frame ---
+            frame_start_time = current_time # Set start time for the *next* frame
+
+            # --- Cap frame rate for visual smoothness ---
+            self.clock.tick(60)
 
     def dispatch_event(self, event):
             if event.type == pygame.QUIT:
