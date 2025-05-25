@@ -1,67 +1,65 @@
 import pygame
-import collections
-from constants import WHITE # Import WHITE from constants.py
+from collections import deque
+import time
 
 class FPSCounter:
-    def __init__(self, font_size=30, position='bottom-left', window_size=60, update_interval=0.5):
-        pygame.font.init() # Ensure font module is initialized
-        self.font = pygame.font.Font(None, font_size)
-        self.font_size = font_size
-        self.position_config = position
-        self.color = WHITE
-        
-        self.fps_values = collections.deque(maxlen=window_size)
-        self.min_fps = float('inf')
-        self.max_fps = float('-inf')
-        
-        self.update_interval = update_interval  # seconds
-        self.last_update_time = 0 # milliseconds
-        self.fps_surface = None # Cache for the text surface
+    def __init__(self, maxlen=60, font=None, color=(255,255,255), pos=(0,0), update_interval=0.5):
+        self.samples = deque(maxlen=maxlen)
+        self.font = font or pygame.font.Font(None, 36)
+        self.color = color
+        self.pos = pos
+        self.maxlen = maxlen
+        self.last_update = time.time()
+        self.update_interval = update_interval
+        self._needs_redraw = True
+        self._displayed_text: str = "" # Der String, der aktuell gerendert wird
+        self._current_fps: float = 0.0
+        self._window_min_fps: float = 0.0 # Min-FPS im aktuellen Fenster
+        self._window_max_fps: float = 0.0 # Max-FPS im aktuellen Fenster
+        self._needs_redraw: bool = True
+        self._rendered_surf: pygame.Surface = pygame.Surface((0, 0)) # avoid NoneType errors
 
-    def draw(self, screen, dt_ms, screen_height): # dt_ms is delta time in milliseconds
-        if dt_ms > 0:
-            current_potential_fps = 1000.0 / dt_ms
-        else:
-            # Avoid division by zero or if dt_ms is 0 (e.g. first frame or paused)
-            # We can show 0 or a very high number if it's truly paused.
-            # For now, let's assume if dt_ms is 0, potential fps is also 0 for this sample.
-            current_potential_fps = 0 
+    def update(self, current_frame_fps: float):
+        """
+        Aktualisiert die FPS-Historie mit dem neuesten Wert
+        und berechnet die angezeigten Min/Max/Avg-Werte, wenn das Intervall erreicht ist.
+        """
+        if current_frame_fps > 0: # Vermeide das Hinzufügen von 0-Werten, die den Durchschnitt verfälschen
+            self.samples.append(current_frame_fps)
 
-        self.fps_values.append(current_potential_fps)
+        self._current_fps = current_frame_fps # Speichere den aktuellen FPS-Wert
 
-        # Update min/max based on the current window of values
-        if self.fps_values:
-            self.min_fps = min(self.fps_values)
-            self.max_fps = max(self.fps_values)
-        else: 
-            # This case would only be hit if window_size is 0
-            self.min_fps = current_potential_fps
-            self.max_fps = current_potential_fps
-            
-        current_time = pygame.time.get_ticks() # current time in milliseconds
-        
-        # Update the FPS text surface only at the specified interval or if it's not yet created
-        if (current_time - self.last_update_time) >= (self.update_interval * 1000) or self.fps_surface is None:
-            # Handle cases where min_fps/max_fps might still be inf/-inf if fps_values was empty
-            display_min = round(self.min_fps) if self.min_fps != float('inf') else round(current_potential_fps)
-            display_max = round(self.max_fps) if self.max_fps != float('-inf') else round(current_potential_fps)
-            
-            # For "current" FPS, using the latest potential FPS value.
-            # Could also average self.fps_values for a smoother "current" display if desired.
-            display_current = round(current_potential_fps) 
+        now = time.time()
+        # Prüfe, ob es Zeit ist, den angezeigten Text zu aktualisieren
+        if now - self.last_update >= self.update_interval:
+            self.last_update = now
 
-            fps_text = f"FPS: {display_current} (Min: {display_min}, Max: {display_max})"
-            self.fps_surface = self.font.render(fps_text, True, self.color)
-            self.last_update_time = current_time
+            if not self.samples: # Wenn keine Samples vorhanden sind (z.B. ganz am Anfang)
+                new_text = "FPS: 0.0 | Max: 0.0 | Min: 0.0"
+                self._window_min_fps = 0.0
+                self._window_max_fps = 0.0
+            else:
+                # Berechne Min/Max/Avg im aktuellen Fenster
+                self._window_min_fps = min(self.samples)
+                self._window_max_fps = max(self.samples)
+                avg_fps = sum(self.samples) / len(self.samples)
 
-        if self.fps_surface:
-            actual_position = (0,0) # Default
-            if self.position_config == 'bottom-left':
-                actual_x = 10
-                actual_y = screen_height - self.font_size - 5 # 5px padding from bottom
-                actual_position = (actual_x, actual_y)
-            elif isinstance(self.position_config, tuple):
-                actual_position = self.position_config
-            else: # Default to top-left if unknown config or other string
-                actual_position = (10,10)
-            screen.blit(self.fps_surface, actual_position)
+                # Formatiere den neuen Text
+                new_text = f"FPS: {avg_fps:5.1f} | Max: {self._window_max_fps:5.1f} | Min: {self._window_min_fps:5.1f}"
+
+            # Prüfe, ob sich der Text geändert hat, um unnötiges Neuzeichnen zu vermeiden
+            if new_text != self._displayed_text:
+                self._displayed_text = new_text
+                self._needs_redraw = True # Setze Flag, dass Text-Surface neu erstellt werden muss
+
+    def draw(self, screen: pygame.Surface):
+        """
+        Draws the FPS counter on the given screen surface.
+        """
+        if self._needs_redraw and self._displayed_text:
+            self._rendered_surf = self.font.render(self._displayed_text, True, self.color)
+            self._needs_redraw = False
+
+        if self._rendered_surf:
+              # Hintergrund zeichnen
+            screen.blit(self._rendered_surf, self.pos)

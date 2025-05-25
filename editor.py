@@ -12,6 +12,8 @@ from toolbar import Toolbar
 from selection import NodeSelection
 from settings import PANNING_FOLLOWS_MOUSE
 from textinput import TextInputRenderer, TextInputEngine
+from typing import List
+from node import Node
 from fps_counter import FPSCounter
 
 class NodeEditor:
@@ -19,79 +21,49 @@ class NodeEditor:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
+        self.fps_counter = FPSCounter(pos=(0, self.screen.get_height()-40))
         self.nx_graph = nx.DiGraph()
-        self.nodes = []
+        self.nodes: List[Node] = []
         self.connections = []
         self.undo_stack = UndoStack(max_depth=undo_depth)
         self.selection = NodeSelection() # multiple selection of nodes
-        self.dragging_connection = False
-        self.connection_start_node = None
-        self.connection_end_pos = None
+        self.dragging_connection: bool = False
+        self.connection_start_node: tuple[int, int] | None = None
+        self.connection_end_pos: tuple[int,int] | None = None
         self.next_node_id = 1
-        self.canvas_offset_x = 0
-        self.canvas_offset_y = 0
+        self.canvas_offset_x: float = 0
+        self.canvas_offset_y: float = 0
         self.panning = False
         self.pan_start = (0, 0)
         self.pan_offset_start = (0, 0)
-        self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
+        self.zoom: float = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
-        self.fps_counter = FPSCounter(position='bottom-left')
+        self.fps_counter = FPSCounter(pos=(0, WINDOW_HEIGHT - 40))
 
     def run(self):
-        actual_processing_dt_ms = 0 # Initialize to be passed for the first frame
-        frame_start_time = pygame.time.get_ticks() # Initialize for first frame's end calculation
-
         while True:
-            # --- Start of frame timing ---
-            # Note: pygame.time.get_ticks() used here for measuring frame duration.
-            # For the very first iteration, actual_processing_dt_ms is 0 (or initial value).
-            # For subsequent iterations, it's the processing time of the *previous* frame.
-            
             events = pygame.event.get()
-            for event in events:
-                # Combined event dispatching from the original run method
-                if self.text_input_active:
-                    # Filter for text input
+            filtered_events = []
+            if self.text_input_active:
+                for event in events:
                     if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         self.handle_key_down(event)
-                        # Skip passing this event to text input if it's TAB/ESCAPE
-                        continue 
-                    if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
-                        # Also skip KEYUP for TAB/ESCAPE
                         continue
-                    # If not skipped, it will be part of 'events' passed to draw method if needed by text_input
-                else: # Not text_input_active, dispatch normally
-                     self.dispatch_event(event)
+                    if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
+                        continue
+                    filtered_events.append(event)
+            else:
+                for event in events:
+                    self.dispatch_event(event)
+                filtered_events = events
 
-            # --- Perform drawing and updates ---
-            # Pass the actual_processing_dt_ms from the *previous* frame for FPS calculation
-            # The 'events' list here is now the potentially filtered list if text_input_active
-            # or the original list if not.
-            # The draw method itself needs access to 'events' if text_input_active is true within draw.
-            # The original code passed 'filtered_events' or 'events' to draw.
-            # We need to replicate that logic for which events list to pass.
-            
-            # Determine which events list to pass to draw based on text_input_active
-            # This logic was originally split in the run method.
-            # Let's ensure the draw call gets the correct events.
-            # The event loop above already handles filtering for TAB/ESCAPE for text input.
-            # The text input processor itself (self.visualizer) might expect all other events.
-            
-            # The draw call itself handles self.text_input_active for text rendering.
-            # The events passed here are for self.visualizer.render_with_overlay(self.screen, events)
-            self.draw(events, actual_processing_dt_ms)
-
-            # --- End of frame processing measurement for FPS counter ---
-            current_time = pygame.time.get_ticks()
-            actual_processing_dt_ms = current_time - frame_start_time # Time spent in this frame
-
-            # --- Prepare for next frame ---
-            frame_start_time = current_time # Set start time for the *next* frame
-
-            # --- Cap frame rate for visual smoothness ---
-            self.clock.tick(60)
+            self.draw(filtered_events)
+            self.fps_counter.update(self.clock.get_fps())
+            self.fps_counter.draw(self.screen)
+            pygame.display.flip()
+            self.clock.tick()
 
     def dispatch_event(self, event):
             if event.type == pygame.QUIT:
@@ -222,14 +194,14 @@ class NodeEditor:
         self.canvas_offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
         self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
-    def draw(self, events, dt_ms):
+    def draw(self, events):
         self.draw_grid()
         self.draw_connections()
         self.draw_nodes()
         self.draw_toolbar()
         self.draw_offscreen_indicators()
         self.draw_text(events)
-        self.fps_counter.draw(self.screen, dt_ms, self.screen.get_height())
+        self.fps_counter.draw(self.screen)
         pygame.display.flip()
 
     def draw_text(self, events):
