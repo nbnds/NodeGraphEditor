@@ -61,7 +61,7 @@ class Node:
         node_surf.blit(text, text_rect)
         return node_surf
 
-    def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
+    def draw(self, screen, offset_x=0.0, offset_y=0.0, zoom=1.0):
         x = int((self.x - offset_x) * zoom)
         y = int((self.y - offset_y) * zoom)
         width = int(self.width * zoom)

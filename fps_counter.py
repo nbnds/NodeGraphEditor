@@ -17,7 +17,7 @@ class FPSCounter:
         self._window_min_fps: float = 0.0 # Min-FPS im aktuellen Fenster
         self._window_max_fps: float = 0.0 # Max-FPS im aktuellen Fenster
         self._needs_redraw: bool = True
-        self._rendered_surf: pygame.Surface = None
+        self._rendered_surf: pygame.Surface = pygame.Surface((0, 0)) # avoid NoneType errors
 
     def update(self, current_frame_fps: float):
         """
@@ -54,14 +54,12 @@ class FPSCounter:
 
     def draw(self, screen: pygame.Surface):
         """
-        Zeichnet den FPS-Zähler auf den Bildschirm.
+        Draws the FPS counter on the given screen surface.
         """
         if self._needs_redraw and self._displayed_text:
             self._rendered_surf = self.font.render(self._displayed_text, True, self.color)
-            self._bg_rect = self._rendered_surf.get_rect(topleft=self.pos).inflate(12, 4)
             self._needs_redraw = False
 
         if self._rendered_surf:
-
-            pygame.draw.rect(screen, (0, 0, 0), self._bg_rect)
+              # Hintergrund zeichnen
             screen.blit(self._rendered_surf, self.pos)

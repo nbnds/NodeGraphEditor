@@ -27,45 +27,41 @@ class NodeEditor:
         self.connections = []
         self.undo_stack = UndoStack(max_depth=undo_depth)
         self.selection = NodeSelection() # multiple selection of nodes
-        self.dragging_connection = False
-        self.connection_start_node = None
-        self.connection_end_pos = None
+        self.dragging_connection: bool = False
+        self.connection_start_node: tuple[int, int] | None = None
+        self.connection_end_pos: tuple[int,int] | None = None
         self.next_node_id = 1
-        self.canvas_offset_x = 0
-        self.canvas_offset_y = 0
+        self.canvas_offset_x: float = 0
+        self.canvas_offset_y: float = 0
         self.panning = False
         self.pan_start = (0, 0)
         self.pan_offset_start = (0, 0)
-        self.zoom = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
+        self.zoom: float = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
+        self.fps_counter = FPSCounter(pos=(0, WINDOW_HEIGHT - 40))
 
     def run(self):
         while True:
             events = pygame.event.get()
-            # Events für TextInput ggf. filtern
+            filtered_events = []
             if self.text_input_active:
-                filtered_events = []
                 for event in events:
-                    # TAB/Escape nicht an TextInput weitergeben!
                     if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         self.handle_key_down(event)
-                        continue  # Nicht an TextInput weitergeben
-                    # Auch KEYUP für TAB/Escape rausfiltern!
+                        continue
                     if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         continue
                     filtered_events.append(event)
-                self.draw(filtered_events)
             else:
                 for event in events:
                     self.dispatch_event(event)
-                self.draw(events)
+                filtered_events = events
 
+            self.draw(filtered_events)
             self.fps_counter.update(self.clock.get_fps())
             self.fps_counter.draw(self.screen)
-
-
             pygame.display.flip()
             self.clock.tick()
 
@@ -86,7 +82,7 @@ class NodeEditor:
             elif event.type == pygame.KEYDOWN:
                 self.handle_key_down(event)
             elif event.type == pygame.DROPFILE:
-                file_path = event.file
+                file_path = event.file # type: ignore
                 pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_key_down(self, event):
@@ -205,6 +201,7 @@ class NodeEditor:
         self.draw_toolbar()
         self.draw_offscreen_indicators()
         self.draw_text(events)
+        self.fps_counter.draw(self.screen)
         pygame.display.flip()
 
     def draw_text(self, events):
