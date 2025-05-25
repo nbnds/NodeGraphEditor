@@ -27,7 +27,7 @@ jobs:
     - name: Set up Python with uv (Windows)
       run: |
         uv python install
-        $pythonBinDir = uv python bin-dir
+        $pythonBinDir = uv python find
         echo "$pythonBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       shell: pwsh
 
