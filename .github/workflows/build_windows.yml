@@ -26,13 +26,7 @@ jobs:
       uses: astral-sh/setup-uv@v5
     
     - name: Set up Python with uv (Windows)
-      run: |
-        uv python install
-        $pythonBinDir = uv python find
-        echo "$pythonBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "PYTHON_BIN=$pythonBinDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      shell: pwsh
-
+      run: uv python install
 
     - name: static code analysis with ruff
       uses: astral-sh/ruff-action@v3
