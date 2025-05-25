@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: write # requires write access to the repository contents
       checks: write # Requires write access to the checks API to publish test results
-
+      issues: write
     steps:
     - name: Code auschecken
       uses: actions/checkout@v4
