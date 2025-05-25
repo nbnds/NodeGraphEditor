@@ -9,7 +9,8 @@ dependencies = [
   "pyinstaller",
   "networkx",
   "pytest",
-  "ruff"
+  "ruff>=0.11.11",
+  "venv"
 ]
 
 [tool.ruff]
