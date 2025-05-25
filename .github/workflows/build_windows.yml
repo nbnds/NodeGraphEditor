@@ -17,6 +17,7 @@ jobs:
       contents: write # requires write access to the repository contents
       checks: write # Requires write access to the checks API to publish test results
       issues: write # Requires write access to the issues API to create issues for failed tests
+      pull-requests: write
     steps:
     - name: Code auschecken
       uses: actions/checkout@v4
@@ -43,6 +44,7 @@ jobs:
       with:
         files: "test-results/**/*.xml"
         check_name: "Pytest Unit Tests Results"
+        comment_mode: off
         report_individual_runs: "true"
         # suite_summary: "Always" # Shows the summary of all test runs, even if there are no failures
         # failure_summary: "Truncate" # Failure report format: "Truncate" or "Full"
