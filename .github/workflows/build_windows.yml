@@ -24,8 +24,13 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
     
-    - name: Set up Python
-      run: uv python install
+    - name: Set up Python with uv (Windows)
+      run: |
+        uv python install
+        $pythonBinDir = uv python bin-dir
+        echo "$pythonBinDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      shell: pwsh
+
 
     - name: static code analysis with ruff
       uses: astral-sh/ruff-action@v3
@@ -42,7 +47,7 @@ jobs:
         # suite_summary: "Always" # Shows the summary of all test runs, even if there are no failures
         # failure_summary: "Truncate" # Failure report format: "Truncate" or "Full"
 
-    - name: Built with PyInstaller
+    - name: Build with PyInstaller
       run: uv run pyinstaller --onefile --windowed --name NodeGraphEditor main.py # 
 
     # Release erstellen (nur bei Tag-Builds)
