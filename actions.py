@@ -1,7 +1,8 @@
 from node import Node
+from networkx.readwrite import json_graph
 from connection import Connection
 class Action:
-    def execute(self, editor=None):
+    def execute(self, editor):
         pass  # Baseclass for actions
 
 class NoOpAction(Action):
@@ -29,7 +30,7 @@ class DeleteAllAction(Action):
 
 class DumpGraphAction(Action):
     def execute(self, editor):
-        from networkx.readwrite import json_graph
+
         from pprint import pprint
         pprint(json_graph.node_link_data(editor.nx_graph, edges="edges"))
         print("======================")
