@@ -341,8 +341,7 @@ class TextInputRenderer:
                                                 self.antialias,
                                                 self.font_color)
         w, h = rendered_surface.get_size()
-        self._surface = pygame.Surface((w + self._cursor_width, h))
-        self._surface = self._surface.convert_alpha(rendered_surface)
+        self._surface = pygame.Surface((w + self._cursor_width, h)).convert_alpha()
         self._surface.fill((0, 0, 0, 0))
         self._surface.blit(rendered_surface, (0, 0))
 
