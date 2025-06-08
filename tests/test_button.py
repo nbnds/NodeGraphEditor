@@ -41,16 +41,16 @@ class TestButton:
 
 
     def test_toolbar_initialization(self, editor):
-        add_node_button = Button(rect=pygame.Rect(50, 50, 40, 40), label=None, action=AddNodeAction())
+        add_node_button = Button(rect=pygame.Rect(50, 50, 40, 40), label="Add Node", action=AddNodeAction())
         button_pos = editor.toolbar.add_button(add_node_button)
 
         assert len(editor.toolbar.buttons) == 1
-        assert editor.toolbar.buttons[-1].label == "<UNNAMED>"
+        assert editor.toolbar.buttons[-1].label == "Add Node"
         editor.dispatch_event(lmb_down(button_pos))
         clicked_button = editor.toolbar.get_clicked_button(button_pos)  # Updated to use button_pos
 
         assert clicked_button is not None
-        assert clicked_button.label == "<UNNAMED>"
+        assert clicked_button.label == "Add Node"
         assert len(editor.nodes) == 1
 
 

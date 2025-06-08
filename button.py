@@ -1,8 +1,9 @@
 import pygame
+from typing import Optional
 from actions import Action, NoOpAction
 
 class Button:
-    def __init__(self, rect: tuple = None, label: str = None, color: tuple = None, action: Action | None = None):
+    def __init__(self, rect: pygame.Rect | None = None, label: Optional[str] = None, color: Optional[tuple] = None, action: Action | None = None):
         self.rect = rect if isinstance(rect, pygame.Rect)  else pygame.Rect(0, 0, 0, 0)
         self.label = label if label is not None else "<UNNAMED>"
         self.font = pygame.font.Font(None, 24)
