@@ -48,6 +48,10 @@ class NodeEditor:
         while True:
             events = pygame.event.get()
             filtered_events = []
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
             if self.text_input_active:
                 for event in events:
                     if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
