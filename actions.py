@@ -25,7 +25,8 @@ class AddNodeAction(Action):
 
 class DeleteAllAction(Action):
     def execute(self, editor):
-        editor.undo_stack.push(copy.deepcopy(editor.nx_graph))  # Push before change
+        # Clear the undo stack so clear all cannot be undone
+        editor.undo_stack.clear()
         editor.nodes.clear()
         editor.connections.clear()
         editor.nx_graph.clear()
