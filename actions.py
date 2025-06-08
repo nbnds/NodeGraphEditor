@@ -1,6 +1,7 @@
 from node import Node
 from networkx.readwrite import json_graph
 from connection import Connection
+from editor import NodeEditor
 class Action:
     def execute(self, editor):
         pass  # Baseclass for actions
@@ -16,8 +17,9 @@ class AddNodeAction(Action):
         center_y = editor.screen.get_height() // 2
         world_x = (center_x + editor.canvas_offset_x * editor.zoom) / editor.zoom
         world_y = (center_y + editor.canvas_offset_y * editor.zoom) / editor.zoom
-        editor.nodes.append(Node(world_x, world_y, editor.next_node_id))
-        editor.nx_graph.add_node(editor.next_node_id, pos=(world_x, world_y))
+        node = Node(world_x, world_y, editor.next_node_id)
+        editor.nodes.append(node)
+        editor.nx_graph.add_node(editor.next_node_id,name=node.node_name, pos=(world_x, world_y))
         editor.next_node_id += 1
 
 class DeleteAllAction(Action):
@@ -36,7 +38,7 @@ class DumpGraphAction(Action):
         print("======================")
 
 class UndoAction(Action):
-    def execute(self, editor):
+    def execute(self, editor:NodeEditor):
         prev_graph = editor.undo_stack.pop()
         if prev_graph:
             # Restore the previous graph state
