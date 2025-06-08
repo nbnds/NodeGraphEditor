@@ -191,7 +191,32 @@ class TextInputRenderer:
         self.update(events)
         surface = self.surface
         rect = surface.get_rect(center=screen.get_rect().center)
+        # Draw a white border around the input field
+        border_rect = rect.inflate(16, 16)
+        pygame.draw.rect(screen, (255, 255, 255), border_rect, width=2, border_radius=8)
         screen.blit(surface, rect)
+        # Draw a ground line just beneath the text
+        line_y = rect.bottom - 4
+        ground_color = (255, 255, 0)  # yellow
+        ground_width = 1  # thinner line
+        if self.manager.value.strip():
+            # Draw line under the text
+            pygame.draw.line(screen, ground_color, (rect.left + 4, line_y), (rect.right - 4, line_y), ground_width)
+        else:
+            # Draw a single line with width of one character, centered, and with a gap from the cursor
+            char_width = self.font_object.size("A")[0]
+            gap_from_cursor = 6  # pixels gap between ground line and cursor
+            center_x = rect.centerx
+            # Draw the ground line 2px below the cursor line for a visible gap
+            ground_line_y = line_y + 2
+            half_line = (char_width - gap_from_cursor) // 2
+            pygame.draw.line(
+                screen,
+                ground_color,
+                (center_x - half_line, ground_line_y),
+                (center_x + half_line, ground_line_y),
+                ground_width
+            )
 
     def should_block_mouse(self):
         """
