@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import copy
 import networkx as nx
 from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, WHITE,
                         WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,
@@ -41,6 +42,7 @@ class NodeEditor:
         self.text_input_active = False
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
         self.fps_counter = FPSCounter(pos=(0, WINDOW_HEIGHT - 40))
+        self._node_drag_in_progress = False  # Track if a node drag is in progress
 
     def run(self):
         while True:
@@ -111,6 +113,10 @@ class NodeEditor:
                     # --- Selected node should be always on top ---
                     self.nodes.remove(node)
                     self.nodes.append(node)
+                    # --- Push undo only once per drag start ---
+                    if not self._node_drag_in_progress:
+                        self.undo_stack.push(copy.deepcopy(self.nx_graph))
+                        self._node_drag_in_progress = True
                 else:
                     node.selected = False
 
@@ -139,6 +145,7 @@ class NodeEditor:
                     for c in self.connections
                 )
                 if not already_connected:
+                    self.undo_stack.push(copy.deepcopy(self.nx_graph))  # Push before adding edge
                     self.connections.append(Connection(selected_node, clicked_node))
                     self.nx_graph.add_edge(selected_node.id, clicked_node.id)
                 # After connecting, deselect the node
@@ -152,7 +159,8 @@ class NodeEditor:
     def handle_mouse_up(self, event):
         if event.button == pygame.BUTTON_LEFT:
             for node in self.nodes:
-                    node.dragging = False
+                node.dragging = False
+            self._node_drag_in_progress = False  # Reset drag flag
         elif event.button == pygame.BUTTON_RIGHT:
             self.panning = False
 
@@ -313,7 +321,7 @@ class NodeEditor:
     def try_delete_connection(self, world_x, world_y):
         for conn in self.connections:
             if conn.is_clicked(world_x, world_y, zoom=self.zoom):
-                self.undo_stack.push(self.nx_graph)
+                self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.connections.remove(conn)
                 if self.nx_graph.has_edge(conn.start_node.id, conn.end_node.id):
                     self.nx_graph.remove_edge(conn.start_node.id, conn.end_node.id)
@@ -328,7 +336,7 @@ class NodeEditor:
                     c for c in self.connections
                     if c.start_node != node and c.end_node != node
                 ]
-                self.undo_stack.push(self.nx_graph)
+                self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.nodes.remove(node)
                 self.nx_graph.remove_node(node.id)
                 node.selected = False  # Deselect the node if it was selected
