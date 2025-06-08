@@ -174,7 +174,8 @@ class TestButton:
         editor.dispatch_event(lmb_up(add_node_btn_pos))
         first_node = editor.nodes[-1]
 
-        assert editor.undo_stack.count_items_in_stack() == 0, "Adding of a node is not undoable, so stack should have no copies"
+        assert editor.undo_stack.count_items_in_stack() == 0, ("Adding of a node is not undoable,"
+                                                               "so stack should have no copies")
 
         # move first node to select it
         node_center = first_node.get_center()
@@ -184,15 +185,16 @@ class TestButton:
         editor.dispatch_event(lmb_up(target_pos))
         assert first_node.selected is True
         assert editor.undo_stack.count_items_in_stack() == 1, "Moving a node is undoable, so stack should have 1 copy"
-        
+
         # add second node to the editor
         editor.dispatch_event(lmb_down(add_node_btn_pos))
         editor.dispatch_event(lmb_up(add_node_btn_pos))
         second_node = editor.nodes[-1]
         assert second_node.selected is False, "Expected the newly created node to be unselected"
         assert first_node.selected is True, "Expected the previously created node to stay selected"
-        assert editor.undo_stack.count_items_in_stack() == 1, "Adding of a node is not undoable, so stack should still have 1 copy"
-        
+        assert editor.undo_stack.count_items_in_stack() == 1, ("Adding of a node is not undoable,"
+                                                               "so stack should still have 1 copy")
+
         # Check the second node is not at the same position as the first
         # (most recent nodes are on top, hence the -1)
         assert second_node.get_center() != editor.nodes[-2].get_center()
@@ -203,8 +205,9 @@ class TestButton:
 
         assert len(editor.connections) == 1, "Expected one connection to be created"
 
-        assert editor.undo_stack.count_items_in_stack() == 2, "Node connection is undoable, so stack should have 2 copies"
-        
+        assert editor.undo_stack.count_items_in_stack() == 2, ("Node connection is undoable, "
+                                                                "so stack should have 2 copies")
+
         # press the Undo button once
         editor.dispatch_event(lmb_down(undo_btn_pos))
         editor.dispatch_event(lmb_up(undo_btn_pos))
@@ -212,7 +215,7 @@ class TestButton:
         assert editor.undo_stack.count_items_in_stack() == 1, "After undoing the last action, stack should have 1 copy"
         assert len(editor.nodes) == 2, "Expected two nodes to be present after undoing the last action"
         assert len(editor.connections) == 0, "Expected no connections after undoing the last action"
-        
+
         # click the Clear All button
         editor.dispatch_event(lmb_down(clear_all_btn_pos))
         editor.dispatch_event(lmb_up(clear_all_btn_pos))

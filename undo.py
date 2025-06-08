@@ -16,12 +16,12 @@ class UndoStack:
 
     def clear(self):
         self.stack.clear()
-    
+
     def count_items_in_stack(self):
         return len(self.stack)
-    
+
     def is_empty(self):
         return len(self.stack) == 0
-    
+
     def is_not_empty(self):
         return len(self.stack) > 0

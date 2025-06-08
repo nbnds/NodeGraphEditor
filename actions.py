@@ -2,7 +2,6 @@ from node import Node
 from networkx.readwrite import json_graph
 from connection import Connection
 from editor import NodeEditor
-import copy
 class Action:
     def execute(self, editor):
         pass  # Baseclass for actions
