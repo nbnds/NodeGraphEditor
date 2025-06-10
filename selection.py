@@ -3,6 +3,7 @@ class NodeSelection:
         self.rect_start = None
         self.rect_end = None
         self.nodes = []
+        self.selected_nodes = []
 
     def begin(self, start_pos):
         self.rect_start = start_pos
@@ -36,3 +37,15 @@ class NodeSelection:
 
     def is_active(self):
         return self.rect_start is not None and self.rect_end is not None
+
+    def select_node(self, node, all_nodes):
+        # Deselect all others, select only this node
+        for n in all_nodes:
+            n.selected = False
+        node.selected = True
+        self.selected_nodes = [node]
+
+    def clear_selection(self, all_nodes):
+        for n in all_nodes:
+            n.selected = False
+        self.selected_nodes = []

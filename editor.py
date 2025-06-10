@@ -112,7 +112,8 @@ class NodeEditor:
                 if node.contains_point(world_x, world_y) and clicked_node is None:
                     node.dragging = True
                     node.drag_offset = (world_x - node.x, world_y - node.y)
-                    node.selected = True
+                    # Delegate selection logic:
+                    self.selection.select_node(node, self.nodes)
                     clicked_node = node
                     # --- Selected node should be always on top ---
                     self.nodes.remove(node)
@@ -121,8 +122,9 @@ class NodeEditor:
                     if not self._node_drag_in_progress:
                         self.undo_stack.push(copy.deepcopy(self.nx_graph))
                         self._node_drag_in_progress = True
-                else:
-                    node.selected = False
+            # Deselect all if no node was clicked
+            if clicked_node is None:
+                self.selection.clear_selection(self.nodes)
 
         elif event.button == pygame.BUTTON_MIDDLE:
             # Check if a node was clicked
