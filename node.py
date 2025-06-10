@@ -75,10 +75,51 @@ class Node:
             self.node_name = "--"
         gap = int(self.height * 0.20 * zoom)
         name_font = pygame.font.Font(None, max(16, int(22 * zoom)))
-        name_text = name_font.render(self.node_name, True, YELLOW)
-        name_rect = name_text.get_rect(center=(width // 2, text_rect.centery + gap + name_text.get_height() // 2))
-        node_surf.blit(name_text, name_rect)
+        max_text_width = int(width * 0.9)
+        name_lines = self._wrap_text(self.node_name, name_font, max_text_width)
+        # Draw up to 2 lines, centered
+        total_height = sum(name_font.size(line)[1] for line in name_lines)
+        start_y = text_rect.centery + gap
+        for i, line in enumerate(name_lines[:2]):
+            name_text = name_font.render(line, True, YELLOW)
+            name_rect = name_text.get_rect(center=(width // 2, start_y + name_text.get_height() // 2 + i * name_text.get_height()))
+            node_surf.blit(name_text, name_rect)
         return node_surf
+
+    def _wrap_text(self, text, font, max_width):
+        # Try to break text into up to 2 lines, breaking on spaces if possible
+        words = text.split(' ')
+        if len(words) == 1:
+            # No spaces, just hard break if needed
+            if font.size(text)[0] <= max_width:
+                return [text]
+            # Break at character level
+            for i in range(len(text), 0, -1):
+                if font.size(text[:i])[0] <= max_width:
+                    return [text[:i], text[i:]]
+            return [text]  # fallback
+        # Try to fit as many words as possible on the first line
+        line1 = ""
+        line2 = ""
+        for i in range(1, len(words)+1):
+            candidate = ' '.join(words[:i])
+            if font.size(candidate)[0] > max_width:
+                line1 = ' '.join(words[:i-1]) if i > 1 else words[0]
+                line2 = ' '.join(words[i-1:]) if i > 1 else ' '.join(words[1:])
+                break
+        else:
+            line1 = text
+            line2 = ""
+        if not line1:
+            line1 = words[0]
+            line2 = ' '.join(words[1:])
+        if line2 and font.size(line2)[0] > max_width:
+            # If second line is still too long, hard break
+            for i in range(len(line2), 0, -1):
+                if font.size(line2[:i])[0] <= max_width:
+                    return [line1, line2[:i] + '…']
+            return [line1, line2]
+        return [line1] if not line2 else [line1, line2]
 
     def draw(self, screen, offset_x=0.0, offset_y=0.0, zoom=1.0):
         x = int((self.x - offset_x) * zoom)
