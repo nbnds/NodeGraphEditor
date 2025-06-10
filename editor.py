@@ -3,7 +3,7 @@ import sys
 import copy
 import networkx as nx
 from constants import (WHITE,
-                        WINDOW_WIDTH, WINDOW_HEIGHT)
+                        WINDOW_WIDTH, WINDOW_HEIGHT, EDGE_CLICK_TOLERANCE)
 
 from connection import Connection
 from connection_list import ConnectionList
@@ -40,6 +40,7 @@ class NodeEditor:
         self._node_drag_in_progress = False  # Track if a node drag is in progress
         self.renderer = NodeEditorRenderer(self)  # Pass self or required state
         self.panning_state = CanvasPanning()
+        self.marked_connection = None  # Track the marked connection
 
     def run(self):
         while True:
@@ -103,34 +104,59 @@ class NodeEditor:
             return
 
         world_x, world_y = self.screen_to_world(event.pos)
-        if event.button == pygame.BUTTON_LEFT:
-            clicked_node = None
-            for node in reversed(self.nodes):
-                if node.contains_point(world_x, world_y) and clicked_node is None:
-                    node.dragging = True
-                    node.drag_offset = (world_x - node.x, world_y - node.y)
-                    # Delegate selection logic:
-                    self.selection.select_node(node, self.nodes)
-                    clicked_node = node
-                    # --- Selected node should be always on top ---
-                    self.nodes.remove(node)
-                    self.nodes.append(node)
-                    # --- Push undo only once per drag start ---
-                    if not self._node_drag_in_progress:
-                        self.undo_stack.push(copy.deepcopy(self.nx_graph))
-                        self._node_drag_in_progress = True
-            # Deselect all if no node was clicked
-            if clicked_node is None:
-                self.selection.clear_selection(self.nodes)
 
+        # First, check if a node is under the cursor
+        clicked_node = None
+        for node in reversed(self.nodes):
+            if node.contains_point(world_x, world_y):
+                clicked_node = node
+                break
+
+        # Only check for connection marking if no node is under the cursor
+        if clicked_node is None:
+            marked = None
+            for conn in self.connections:
+                if conn.is_clicked(world_x, world_y, zoom=self.zoom, tolerance=EDGE_CLICK_TOLERANCE):
+                    marked = conn
+                    break
+            if marked:
+                # Mark this connection, unmark others
+                for conn in self.connections:
+                    conn.marked = (conn is marked)
+                self.marked_connection = marked
+            else:
+                # Unmark all connections if click is not on any connection
+                for conn in self.connections:
+                    conn.marked = False
+                self.marked_connection = None
+        else:
+            # Unmark all connections if a node is clicked
+            for conn in self.connections:
+                conn.marked = False
+            self.marked_connection = None
+
+        if event.button == pygame.BUTTON_LEFT:
+            # Use the clicked_node found above
+            if clicked_node is not None:
+                clicked_node.dragging = True
+                clicked_node.drag_offset = (world_x - clicked_node.x, world_y - clicked_node.y)
+                # Delegate selection logic:
+                self.selection.select_node(clicked_node, self.nodes)
+                # --- Selected node should be always on top ---
+                self.nodes.remove(clicked_node)
+                self.nodes.append(clicked_node)
+                # --- Push undo only once per drag start ---
+                if not self._node_drag_in_progress:
+                    self.undo_stack.push(copy.deepcopy(self.nx_graph))
+                    self._node_drag_in_progress = True
+            else:
+                self.selection.clear_selection(self.nodes)
         elif event.button == pygame.BUTTON_MIDDLE:
             # Check if a node was clicked
             if self.try_delete_node(world_x, world_y):
                 return
             # Check if a connection was clicked
             self.try_delete_connection(world_x, world_y)
-
-
         elif event.button == pygame.BUTTON_RIGHT:
             # Check if a node is under the cursor
             clicked_node = None
@@ -206,7 +232,7 @@ class NodeEditor:
 
     def try_delete_connection(self, world_x, world_y):
         for conn in list(self.connections):  # Use list() to allow removal during iteration
-            if conn.is_clicked(world_x, world_y, zoom=self.zoom):
+            if conn.is_clicked(world_x, world_y, zoom=self.zoom, tolerance=EDGE_CLICK_TOLERANCE):
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.connections.remove(conn)
                 if self.nx_graph.has_edge(conn.start_node.id, conn.end_node.id):

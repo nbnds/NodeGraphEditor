@@ -1,4 +1,4 @@
-from constants import WHITE
+from constants import WHITE, GREEN
 import math
 import pygame
 
@@ -6,6 +6,7 @@ class Connection:
     def __init__(self, start_node, end_node):
         self.start_node = start_node
         self.end_node = end_node
+        self.marked = False  # New attribute
 
     def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
         start_pos = (
@@ -18,7 +19,8 @@ class Connection:
         )
 
         thickness = max(1, int(2 * zoom))
-        pygame.draw.line(screen, WHITE, start_pos, end_pos, thickness)
+        color = GREEN if self.marked else WHITE
+        pygame.draw.line(screen, color, start_pos, end_pos, thickness)
 
     def is_clicked(self, world_x, world_y, zoom=1.0, tolerance=10):
         x1, y1 = self.start_node.get_right_center()

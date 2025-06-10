@@ -7,6 +7,7 @@ BLUE = (0, 122, 204)
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
+GREEN = (0, 255, 0)
 BLUEPRINT_COLOR = (30, 40, 100) #   Background color of the blueprint
 BLUEPRINT_LINE_COLOR = (50, 60, 120) #   Color of the grid lines
 #MAIN WINDOW
@@ -34,3 +35,6 @@ TOOLBAR_BG_COLOR = (30, 40, 90) # Background color of the toolbar
 # (80, 150, 80) apple green
 # (30, 40, 90) silk blue
 # (200, 150, 70) #Bronze tone
+
+# GRAPH
+EDGE_CLICK_TOLERANCE = 10
