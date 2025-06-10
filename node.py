@@ -106,3 +106,7 @@ class Node:
         conn_radius = max(2, int(CONNECTION_RADIUS * zoom))
         pygame.draw.circle(screen, BLUE, input_screen, conn_radius)
         pygame.draw.circle(screen, RED, output_screen, conn_radius)
+
+    def invalidate_cache(self):
+        self._cache_surface = None
+        self._cache_params = None

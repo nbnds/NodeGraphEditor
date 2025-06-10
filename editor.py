@@ -51,10 +51,10 @@ class NodeEditor:
                     pygame.quit()
                     sys.exit()
                 if self.text_input_active:
-                    if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
+                    if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE, pygame.K_RETURN):
                         self.handle_key_down(event)
                         continue
-                    if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
+                    if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE, pygame.K_RETURN):
                         continue
                     filtered_events.append(event)
                 else:
@@ -91,6 +91,23 @@ class NodeEditor:
         if event.key == pygame.K_TAB and not self.text_input_active:
             self.text_input_active = True
         elif event.key == pygame.K_ESCAPE:
+            self.text_input_active = False
+            self.visualizer.clear_text()
+        elif event.key == pygame.K_RETURN and self.text_input_active:
+            # Find the marked node (selected node)
+            marked_node = None
+            for node in self.nodes:
+                if node.selected:
+                    marked_node = node
+                    break
+            if marked_node:
+                marked_node.node_name = self.visualizer.value
+                # Also update the node name in the graph data
+                if marked_node.id in self.nx_graph.nodes:
+                    self.nx_graph.nodes[marked_node.id]['name'] = self.visualizer.value
+                # Invalidate node cache so the new name is drawn immediately
+                if hasattr(marked_node, "invalidate_cache"):
+                    marked_node.invalidate_cache()
             self.text_input_active = False
             self.visualizer.clear_text()
 
