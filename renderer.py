@@ -3,12 +3,39 @@ import math
 from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, TOOLBAR_WIDTH,
                         BLUEPRINT_GRID_SIZE)
 
+class GridRenderer:
+    def draw(self, screen, canvas_offset_x, canvas_offset_y, zoom):
+        # Background
+        screen.fill(BLUEPRINT_COLOR)
+
+        # Grid with zoom
+        grid_size = BLUEPRINT_GRID_SIZE * zoom
+        screen_w = screen.get_width()
+        screen_h = screen.get_height()
+        x_start = TOOLBAR_WIDTH - (canvas_offset_x % BLUEPRINT_GRID_SIZE) * zoom
+        y_start = - (canvas_offset_y % BLUEPRINT_GRID_SIZE) * zoom
+
+        x = x_start
+        while x < screen_w:
+            pygame.draw.line(screen, BLUEPRINT_LINE_COLOR, (x, 0), (x, screen_h))
+            x += grid_size
+        y = y_start
+        while y < screen_h:
+            pygame.draw.line(screen, BLUEPRINT_LINE_COLOR, (TOOLBAR_WIDTH, y), (screen_w, y))
+            y += grid_size
+
 class NodeEditorRenderer:
     def __init__(self, editor):
         self.editor = editor
+        self.grid_renderer = GridRenderer()
 
     def draw(self, events):
-        self.draw_grid()
+        self.grid_renderer.draw(
+            self.editor.screen,
+            self.editor.canvas_offset_x,
+            self.editor.canvas_offset_y,
+            self.editor.zoom
+        )
         self.draw_connections()
         self.draw_nodes()
         self.draw_toolbar()
@@ -16,26 +43,6 @@ class NodeEditorRenderer:
         self.draw_text(events)
         self.editor.fps_counter.draw(self.editor.screen)
         pygame.display.flip()
-
-    def draw_grid(self):
-        # Background
-        self.editor.screen.fill(BLUEPRINT_COLOR)
-
-        # Grid with zoom
-        grid_size = BLUEPRINT_GRID_SIZE * self.editor.zoom
-        screen_w = self.editor.screen.get_width()
-        screen_h = self.editor.screen.get_height()
-        x_start = TOOLBAR_WIDTH - (self.editor.canvas_offset_x % BLUEPRINT_GRID_SIZE) * self.editor.zoom
-        y_start = - (self.editor.canvas_offset_y % BLUEPRINT_GRID_SIZE) * self.editor.zoom
-
-        x = x_start
-        while x < screen_w:
-            pygame.draw.line(self.editor.screen, BLUEPRINT_LINE_COLOR, (x, 0), (x, screen_h))
-            x += grid_size
-        y = y_start
-        while y < screen_h:
-            pygame.draw.line(self.editor.screen, BLUEPRINT_LINE_COLOR, (TOOLBAR_WIDTH, y), (screen_w, y))
-            y += grid_size
 
     def draw_connections(self):
         # Connections
