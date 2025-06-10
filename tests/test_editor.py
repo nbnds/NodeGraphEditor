@@ -12,9 +12,10 @@ class TestNodeEditor:
     def editor(self):
         editor = NodeEditor()
         editor.zoom = 1.0
-        editor.canvas_offset_x = 0
-        editor.canvas_offset_y = 0
-        # Return the configured object
+        editor.panning_state.offset_x = 0
+        editor.panning_state.offset_y = 0
+        # Remove: editor.canvas_offset_x = 0
+        # Remove: editor.canvas_offset_y = 0
         return editor
 
     def test_add_node(self, editor):
@@ -51,8 +52,8 @@ class TestNodeEditor:
 
     def test_offset_only(self, editor):
         """If offset is set, world coordinates shift accordingly."""
-        editor.canvas_offset_x = 50
-        editor.canvas_offset_y = 20
+        editor.panning_state.offset_x = 50
+        editor.panning_state.offset_y = 20
         # screen (0,0) maps to world (50,20)
         assert editor.screen_to_world((0, 0)) == (50, 20)
         # screen (100,200) maps to world (150,220)
@@ -67,8 +68,8 @@ class TestNodeEditor:
     def test_zoom_and_offset(self, editor):
         """If both zoom and offset are set, both effects combine."""
         editor.zoom = 2.0
-        editor.canvas_offset_x = 10
-        editor.canvas_offset_y = 20
+        editor.panning_state.offset_x = 10
+        editor.panning_state.offset_y = 20
         # screen (0,0) maps to world (10,20)
         assert editor.screen_to_world((0, 0)) == (10, 20)
         # screen (100,200) maps to world (60,120)
@@ -81,11 +82,11 @@ class TestNodeEditor:
         editor.screen = pygame.display.set_mode(new_size, pygame.RESIZABLE)
         # The method should still return correct world coordinates
         editor.zoom = 1.0
-        editor.canvas_offset_x = 0
-        editor.canvas_offset_y = 0
+        editor.panning_state.offset_x = 0
+        editor.panning_state.offset_y = 0
         assert editor.screen_to_world((100, 200)) == (100, 200)
         # Now with offset and zoom
         editor.zoom = 2.0
-        editor.canvas_offset_x = 10
-        editor.canvas_offset_y = 20
+        editor.panning_state.offset_x = 10
+        editor.panning_state.offset_y = 20
         assert editor.screen_to_world((100, 200)) == (60, 120)

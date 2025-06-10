@@ -15,8 +15,8 @@ class AddNodeAction(Action):
     def execute(self, editor):
         center_x = editor.screen.get_width() // 2
         center_y = editor.screen.get_height() // 2
-        world_x = (center_x + editor.canvas_offset_x * editor.zoom) / editor.zoom
-        world_y = (center_y + editor.canvas_offset_y * editor.zoom) / editor.zoom
+        world_x = (center_x + editor.panning_state.offset_x * editor.zoom) / editor.zoom
+        world_y = (center_y + editor.panning_state.offset_y * editor.zoom) / editor.zoom
         node = Node(world_x, world_y, editor.next_node_id)
         editor.nodes.append(node)
         editor.nx_graph.add_node(editor.next_node_id,name=node.node_name, pos=(world_x, world_y))

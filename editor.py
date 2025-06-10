@@ -15,6 +15,7 @@ from typing import List
 from node import Node
 from fps_counter import FPSCounter
 from renderer import NodeEditorRenderer  # <-- new import
+from canvas_panning import CanvasPanning
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -31,11 +32,6 @@ class NodeEditor:
         self.connection_start_node: tuple[int, int] | None = None
         self.connection_end_pos: tuple[int,int] | None = None
         self.next_node_id = 1
-        self.canvas_offset_x: float = 0
-        self.canvas_offset_y: float = 0
-        self.panning = False
-        self.pan_start = (0, 0)
-        self.pan_offset_start = (0, 0)
         self.zoom: float = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
@@ -43,6 +39,7 @@ class NodeEditor:
         self.fps_counter = FPSCounter(pos=(0, WINDOW_HEIGHT - 40))
         self._node_drag_in_progress = False  # Track if a node drag is in progress
         self.renderer = NodeEditorRenderer(self)  # Pass self or required state
+        self.panning_state = CanvasPanning()
 
     def run(self):
         while True:
@@ -158,9 +155,7 @@ class NodeEditor:
                 selected_node.selected = False
             # Canvas panning only if no node was hit
             elif clicked_node is None:
-                self.panning = True
-                self.pan_start = event.pos
-                self.pan_offset_start = (self.canvas_offset_x, self.canvas_offset_y)
+                self.panning_state.start_panning(event.pos)
 
     def handle_mouse_up(self, event):
         if event.button == pygame.BUTTON_LEFT:
@@ -168,36 +163,31 @@ class NodeEditor:
                 node.dragging = False
             self._node_drag_in_progress = False  # Reset drag flag
         elif event.button == pygame.BUTTON_RIGHT:
-            self.panning = False
+            self.panning_state.stop_panning()
 
     def handle_mouse_motion(self, event):
         x, y = event.pos
         #Update hover state for toolbar buttons
         for btn in self.toolbar.buttons:
             btn.hovered = btn.rect.collidepoint(x, y)
-        world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
-        world_y = (y + self.canvas_offset_y * self.zoom) / self.zoom
+        world_x = (x + self.panning_state.offset_x * self.zoom) / self.zoom
+        world_y = (y + self.panning_state.offset_y * self.zoom) / self.zoom
         for node in self.nodes:
             if node.dragging:
                 node.x = world_x - node.drag_offset[0]
                 node.y = world_y - node.drag_offset[1]
                 self.nx_graph.nodes[node.id]['pos'] = (node.x, node.y)
-        if self.panning:
-            dx = (x - self.pan_start[0]) / self.zoom
-            dy = (y - self.pan_start[1]) / self.zoom
-            if PANNING_FOLLOWS_MOUSE:
-                self.canvas_offset_x = self.pan_offset_start[0] - dx
-                self.canvas_offset_y = self.pan_offset_start[1] - dy
-            else:
-                self.canvas_offset_x = self.pan_offset_start[0] + dx
-                self.canvas_offset_y = self.pan_offset_start[1] + dy
+        if self.panning_state.panning:
+            self.panning_state.update_panning(
+                (x, y), self.zoom, PANNING_FOLLOWS_MOUSE
+            )
 
     def handle_mouse_wheel(self, event):
         # Get mouse position
         mouse_x, mouse_y = pygame.mouse.get_pos()
         # Convert to world coordinates before zoom
-        world_x_before = (mouse_x + self.canvas_offset_x * self.zoom) / self.zoom
-        world_y_before = (mouse_y + self.canvas_offset_y * self.zoom) / self.zoom
+        world_x_before = (mouse_x + self.panning_state.offset_x * self.zoom) / self.zoom
+        world_y_before = (mouse_y + self.panning_state.offset_y * self.zoom) / self.zoom
 
         if event.y > 0:
             self.zoom = min(self.zoom * 1.1, 2.0)
@@ -205,8 +195,8 @@ class NodeEditor:
             self.zoom = max(self.zoom / 1.1, 0.1)
 
         # After zoom, adjust offset so the world point under the mouse stays the same
-        self.canvas_offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
-        self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
+        self.panning_state.offset_x = (world_x_before * self.zoom - mouse_x) / self.zoom
+        self.panning_state.offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
     def draw(self, events):
         self.renderer.draw(events)  # Delegate to renderer
@@ -237,8 +227,7 @@ class NodeEditor:
         return False
 
     def screen_to_world(self, pos):
-        """Wandelt Bildschirmkoordinaten in Weltkoordinaten um (berücksichtigt Zoom und Offset)."""
         x, y = pos
-        world_x = (x + self.canvas_offset_x * self.zoom) / self.zoom
-        world_y = (y + self.canvas_offset_y * self.zoom) / self.zoom
+        world_x = (x + self.panning_state.offset_x * self.zoom) / self.zoom
+        world_y = (y + self.panning_state.offset_y * self.zoom) / self.zoom
         return world_x, world_y

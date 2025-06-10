@@ -35,8 +35,8 @@ class TestButton:
     def editor(self, toolbar):
         editor = NodeEditor(toolbar)
         editor.zoom = 1.0
-        editor.canvas_offset_x = 0
-        editor.canvas_offset_y = 0
+        editor.panning_state.offset_x = 0
+        editor.panning_state.offset_y = 0
         return editor
 
 

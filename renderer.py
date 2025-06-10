@@ -4,7 +4,7 @@ from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, TOOLBAR_WIDTH,
                         BLUEPRINT_GRID_SIZE)
 
 class GridRenderer:
-    def draw(self, screen, canvas_offset_x, canvas_offset_y, zoom):
+    def draw(self, screen, panning_state, zoom):
         # Background
         screen.fill(BLUEPRINT_COLOR)
 
@@ -12,8 +12,8 @@ class GridRenderer:
         grid_size = BLUEPRINT_GRID_SIZE * zoom
         screen_w = screen.get_width()
         screen_h = screen.get_height()
-        x_start = TOOLBAR_WIDTH - (canvas_offset_x % BLUEPRINT_GRID_SIZE) * zoom
-        y_start = - (canvas_offset_y % BLUEPRINT_GRID_SIZE) * zoom
+        x_start = TOOLBAR_WIDTH - (panning_state.offset_x % BLUEPRINT_GRID_SIZE) * zoom
+        y_start = - (panning_state.offset_y % BLUEPRINT_GRID_SIZE) * zoom
 
         x = x_start
         while x < screen_w:
@@ -32,8 +32,7 @@ class NodeEditorRenderer:
     def draw(self, events):
         self.grid_renderer.draw(
             self.editor.screen,
-            self.editor.canvas_offset_x,
-            self.editor.canvas_offset_y,
+            self.editor.panning_state,
             self.editor.zoom
         )
         self.draw_connections()
@@ -47,18 +46,22 @@ class NodeEditorRenderer:
     def draw_connections(self):
         # Connections
         for connection in self.editor.connections:
-            connection.draw(self.editor.screen,
-                            self.editor.canvas_offset_x,
-                            self.editor.canvas_offset_y,
-                            zoom=self.editor.zoom)
+            connection.draw(
+                self.editor.screen,
+                self.editor.panning_state.offset_x,
+                self.editor.panning_state.offset_y,
+                zoom=self.editor.zoom
+            )
 
     def draw_nodes(self):
         # Nodes
         for node in self.editor.nodes:
-            node.draw(self.editor.screen,
-                      self.editor.canvas_offset_x,
-                      self.editor.canvas_offset_y,
-                      zoom=self.editor.zoom)
+            node.draw(
+                self.editor.screen,
+                self.editor.panning_state.offset_x,
+                self.editor.panning_state.offset_y,
+                zoom=self.editor.zoom
+            )
 
     def draw_toolbar(self):
         self.editor.toolbar.draw(self.editor.screen)
@@ -78,15 +81,15 @@ class NodeEditorRenderer:
 
         def get_screen_coords(node):
             return (
-                (node.x * self.editor.zoom) - self.editor.canvas_offset_x * self.editor.zoom,
-                (node.y * self.editor.zoom) - self.editor.canvas_offset_y * self.editor.zoom,
+                (node.x * self.editor.zoom) - self.editor.panning_state.offset_x * self.editor.zoom,
+                (node.y * self.editor.zoom) - self.editor.panning_state.offset_y * self.editor.zoom,
             )
 
         center_x = TOOLBAR_WIDTH + (screen_w - TOOLBAR_WIDTH) // 2
         center_y = screen_h // 2
 
         for node in self.editor.nodes:
-            # COnvert world coordinates to screen coordinates
+            # Convert world coordinates to screen coordinates
             screen_x, screen_y = get_screen_coords(node)
 
             if is_node_visible(screen_x, screen_y):
