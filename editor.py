@@ -50,18 +50,16 @@ class NodeEditor:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            if self.text_input_active:
-                for event in events:
+                if self.text_input_active:
                     if event.type == pygame.KEYDOWN and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         self.handle_key_down(event)
                         continue
                     if event.type == pygame.KEYUP and event.key in (pygame.K_TAB, pygame.K_ESCAPE):
                         continue
                     filtered_events.append(event)
-            else:
-                for event in events:
+                else:
                     self.dispatch_event(event)
-                filtered_events = events
+                    filtered_events = events
 
             self.draw(filtered_events)
             self.fps_counter.update(self.clock.get_fps())
