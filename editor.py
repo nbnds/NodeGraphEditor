@@ -17,6 +17,7 @@ from node import Node
 from fps_counter import FPSCounter
 from renderer import NodeEditorRenderer  # <-- new import
 from canvas_panning import CanvasPanning
+from connection_drag_state import ConnectionDragState
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -29,9 +30,7 @@ class NodeEditor:
         self.connections = ConnectionList()
         self.undo_stack = UndoStack(max_depth=undo_depth)
         self.selection = NodeSelection() # multiple selection of nodes
-        self.dragging_connection: bool = False
-        self.connection_start_node: tuple[int, int] | None = None
-        self.connection_end_pos: tuple[int,int] | None = None
+        self.connection_drag = ConnectionDragState()
         self.next_node_id = 1
         self.zoom: float = 1.0  # 1.0 = 100%, min 0.1 (1:10), max e.g. 2.0
         self.toolbar = toolbar if toolbar else Toolbar()
@@ -182,6 +181,9 @@ class NodeEditor:
             self.panning_state.update_panning(
                 (x, y), self.zoom, PANNING_FOLLOWS_MOUSE
             )
+        # Handle connection dragging
+        if self.connection_drag.is_active():
+            self.connection_drag.update_end((x, y))
 
     def handle_mouse_wheel(self, event):
         # Get mouse position
