@@ -44,7 +44,6 @@ class NodeEditorRenderer:
         pygame.display.flip()
 
     def draw_connections(self):
-        # Connections
         for connection in self.editor.connections:
             connection.draw(
                 self.editor.screen,

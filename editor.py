@@ -6,6 +6,7 @@ from constants import (WHITE,
                         WINDOW_WIDTH, WINDOW_HEIGHT)
 
 from connection import Connection
+from connection_list import ConnectionList
 from undo import UndoStack
 from toolbar import Toolbar
 from selection import NodeSelection
@@ -25,7 +26,7 @@ class NodeEditor:
         self.fps_counter = FPSCounter(pos=(0, self.screen.get_height()-40))
         self.nx_graph = nx.DiGraph()
         self.nodes: List[Node] = []
-        self.connections = []
+        self.connections = ConnectionList()
         self.undo_stack = UndoStack(max_depth=undo_depth)
         self.selection = NodeSelection() # multiple selection of nodes
         self.dragging_connection: bool = False
@@ -202,7 +203,7 @@ class NodeEditor:
         self.renderer.draw(events)  # Delegate to renderer
 
     def try_delete_connection(self, world_x, world_y):
-        for conn in self.connections:
+        for conn in list(self.connections):  # Use list() to allow removal during iteration
             if conn.is_clicked(world_x, world_y, zoom=self.zoom):
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.connections.remove(conn)
@@ -215,7 +216,7 @@ class NodeEditor:
         for node in reversed(self.nodes):
             if node.contains_point(world_x, world_y):
                 # Remove all connections to/from this node
-                self.connections = [
+                self.connections._connections = [
                     c for c in self.connections
                     if c.start_node != node and c.end_node != node
                 ]
