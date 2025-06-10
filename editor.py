@@ -1,11 +1,9 @@
 import pygame
 import sys
-import math
 import copy
 import networkx as nx
-from constants import (BLUEPRINT_COLOR, BLUEPRINT_LINE_COLOR, WHITE,
-                        WINDOW_WIDTH, WINDOW_HEIGHT, TOOLBAR_WIDTH,
-                        BLUEPRINT_GRID_SIZE)
+from constants import (WHITE,
+                        WINDOW_WIDTH, WINDOW_HEIGHT)
 
 from connection import Connection
 from undo import UndoStack
@@ -16,6 +14,7 @@ from textinput import TextInputRenderer, TextInputEngine
 from typing import List
 from node import Node
 from fps_counter import FPSCounter
+from renderer import NodeEditorRenderer  # <-- new import
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -43,6 +42,7 @@ class NodeEditor:
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
         self.fps_counter = FPSCounter(pos=(0, WINDOW_HEIGHT - 40))
         self._node_drag_in_progress = False  # Track if a node drag is in progress
+        self.renderer = NodeEditorRenderer(self)  # Pass self or required state
 
     def run(self):
         while True:
@@ -207,120 +207,7 @@ class NodeEditor:
         self.canvas_offset_y = (world_y_before * self.zoom - mouse_y) / self.zoom
 
     def draw(self, events):
-        self.draw_grid()
-        self.draw_connections()
-        self.draw_nodes()
-        self.draw_toolbar()
-        self.draw_offscreen_indicators()
-        self.draw_text(events)
-        self.fps_counter.draw(self.screen)
-        pygame.display.flip()
-
-    def draw_text(self, events):
-        if self.text_input_active:
-            self.visualizer.overlay_enabled = True
-            self.visualizer.render_with_overlay(self.screen, events)
-            if self.visualizer.should_block_mouse():
-                pass
-        else:
-            self.visualizer.overlay_enabled = False
-            # Optional: falls du das Textfeld auch ohne Overlay anzeigen willst
-            # self.visualizer.update(events)
-            # self.screen.blit(self.visualizer.surface, (200, 200))
-
-    def draw_grid(self):
-        # Background
-        self.screen.fill(BLUEPRINT_COLOR)
-
-        # Grid with zoom
-        grid_size = BLUEPRINT_GRID_SIZE * self.zoom
-        screen_w = self.screen.get_width()
-        screen_h = self.screen.get_height()
-        x_start = TOOLBAR_WIDTH - (self.canvas_offset_x % BLUEPRINT_GRID_SIZE) * self.zoom
-        y_start = - (self.canvas_offset_y % BLUEPRINT_GRID_SIZE) * self.zoom
-
-        x = x_start
-        while x < screen_w:
-            pygame.draw.line(self.screen, BLUEPRINT_LINE_COLOR, (x, 0), (x, screen_h))
-            x += grid_size
-        y = y_start
-        while y < screen_h:
-            pygame.draw.line(self.screen, BLUEPRINT_LINE_COLOR, (TOOLBAR_WIDTH, y), (screen_w, y))
-            y += grid_size
-
-    def draw_connections(self):
-        # Connections
-        for connection in self.connections:
-            connection.draw(self.screen, self.canvas_offset_x, self.canvas_offset_y, zoom=self.zoom)
-
-    def draw_nodes(self):
-        # Nodes
-        for node in self.nodes:
-            node.draw(self.screen, self.canvas_offset_x, self.canvas_offset_y, zoom=self.zoom)
-
-    def draw_toolbar(self):
-        self.toolbar.draw(self.screen)
-
-    def draw_offscreen_indicators(self):
-        screen_w = self.screen.get_width()
-        screen_h = self.screen.get_height()
-        color = (160, 160, 160)
-        margin = 0
-        r_size = 16 # size of the indicator rect
-
-        def is_node_visible(screen_x, screen_y):
-            return (
-                TOOLBAR_WIDTH + margin < screen_x < screen_w - margin and
-                margin < screen_y < screen_h - margin
-            )
-
-        def get_screen_coords(node):
-            return (
-                (node.x * self.zoom) - self.canvas_offset_x * self.zoom,
-                (node.y * self.zoom) - self.canvas_offset_y * self.zoom,
-            )
-
-        center_x = TOOLBAR_WIDTH + (screen_w - TOOLBAR_WIDTH) // 2
-        center_y = screen_h // 2
-
-        for node in self.nodes:
-            # COnvert world coordinates to screen coordinates
-            screen_x, screen_y = get_screen_coords(node)
-
-            if is_node_visible(screen_x, screen_y):
-                continue
-
-            dx = screen_x - center_x
-            dy = screen_y - center_y
-
-            # Normalize direction to the edge of the window
-            if dx == 0 and dy == 0:
-                continue  # should not happen, but just in case
-
-            angle = math.atan2(dy, dx)
-
-            # Determine intersection with window edge
-            if abs(dx) > abs(dy * (screen_w / screen_h)):
-                # Left/Right edge
-                edge_x = screen_w - margin if dx > 0 else TOOLBAR_WIDTH + margin
-                edge_y = center_y + (edge_x - center_x) * math.tan(angle)
-            # Top/Bottom
-            else:
-                # Top/Bottom edge
-                edge_y = screen_h - margin if dy > 0 else margin
-                edge_x = center_x + (edge_y - center_y) / math.tan(angle)
-
-            # Draw indicator rect at edge
-            rect_x = int(edge_x - r_size // 2)
-            rect_y = int(edge_y - r_size // 2)
-            rect = pygame.Rect(rect_x, rect_y, r_size, r_size)
-            pygame.draw.rect(
-                self.screen,
-                color,
-                rect,
-                width=1,
-                border_radius=3
-                )
+        self.renderer.draw(events)  # Delegate to renderer
 
     def try_delete_connection(self, world_x, world_y):
         for conn in self.connections:
