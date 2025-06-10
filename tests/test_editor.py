@@ -1,10 +1,17 @@
 import os
 import pytest
 os.environ["SDL_VIDEODRIVER"] = "dummy"
+import pygame
+
+@pytest.fixture(scope="session", autouse=True)
+def pygame_init_and_quit():
+    pygame.init()
+    yield
+    pygame.quit()
+
 from editor import NodeEditor
 from node import Node
 from connection import Connection
-import pygame
 
 class TestNodeEditor:
 
@@ -90,3 +97,27 @@ class TestNodeEditor:
         editor.panning_state.offset_x = 10
         editor.panning_state.offset_y = 20
         assert editor.screen_to_world((100, 200)) == (60, 120)
+
+    def test_rename_node(self, editor):
+        """
+        When a node is selected and the user enters a new name and presses ENTER,
+        the node's label and the graph's node attribute should update immediately.
+        """
+        # Given a node is present and selected
+        node = Node(100, 100, 1)
+        editor.nodes.append(node)
+        editor.nx_graph.add_node(1, pos=(100, 100), name=node.node_name)
+        # Simulate user selects the node (as in UI)
+        editor.selection.select_node(node, editor.nodes)
+        # And the text input is activated
+        editor.text_input_active = True
+        # And the user types a new name
+        new_name = "MyNode"
+        editor.visualizer.value = new_name
+        # When the user presses ENTER
+        event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
+        editor.handle_key_down(event)
+        # Then the node's name should be updated
+        assert node.node_name == new_name
+        # And the graph's node attribute should be updated
+        assert editor.nx_graph.nodes[1]['name'] == new_name
