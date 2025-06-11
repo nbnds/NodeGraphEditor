@@ -10,6 +10,7 @@ class Connection:
         self.label = label   # New attribute
 
     def draw(self, screen, offset_x=0, offset_y=0, zoom=1.0):
+        # Use local variables to avoid repeated calculations and excessive allocations
         start_pos = (
             int((self.start_node.get_output_pos()[0] - offset_x) * zoom),
             int((self.start_node.get_output_pos()[1] - offset_y) * zoom)
@@ -22,20 +23,26 @@ class Connection:
         thickness = max(1, int(2 * zoom))
         color = GREEN if self.marked else WHITE
 
-        # Draw label in a rectangle if present
         label_rect = None
         label_box_halfwidth = 0
         label_box_halfheight = 0
         label_center = None
+
+        # --- Optimization: Only create font ONCE per draw call, not per label ---
+        # Use a static font cache for each font size
+        if not hasattr(self, "_font_cache"):
+            self._font_cache = {}
+
         if self.label:
-            # Font size decreases with zoom, but not too fast (clamped)
             min_font_size = 10
             max_font_size = 28
             font_size = int(18 * max(0.7, min(1.0, zoom)))
             font_size = max(min_font_size, min(max_font_size, font_size))
-            font = pygame.font.Font(None, font_size)
+            # Use cached font object
+            if font_size not in self._font_cache:
+                self._font_cache[font_size] = pygame.font.Font(None, font_size)
+            font = self._font_cache[font_size]
             label_surf = font.render(self.label, True, color)
-            # Padding is reduced for less box size at low zoom
             max_pad = 12
             pad_scale = max(0.5, min(1.0, zoom))
             label_padding_x = int(max_pad * pad_scale)
@@ -43,7 +50,6 @@ class Connection:
             rect_width = label_surf.get_width() + 2 * label_padding_x
             rect_height = label_surf.get_height() + 2 * label_padding_y
 
-            # Midpoint of the line
             mid_x = (start_pos[0] + end_pos[0]) // 2
             mid_y = (start_pos[1] + end_pos[1]) // 2
 
@@ -54,13 +60,10 @@ class Connection:
             label_box_halfwidth = rect_width // 2
             label_box_halfheight = rect_height // 2
 
-            # Draw filled rectangle (background) directly on the screen to cover the line
             bg_color = (32, 32, 32)
             pygame.draw.rect(screen, bg_color, label_rect, border_radius=6)
-            # Draw border (always thin, regardless of zoom)
             border_width = 1
             pygame.draw.rect(screen, color, label_rect, width=border_width, border_radius=6)
-            # Blit label text centered
             label_text_rect = label_surf.get_rect(center=label_rect.center)
             screen.blit(label_surf, label_text_rect)
 
