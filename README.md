@@ -1,7 +1,7 @@
 
 This is a pygame experiment to create node-graph based user interface.
 
-<img src="docs/app_scr.png" width="480"> 
+<img src="docs/app_scr.png" width="800"> 
 
 ### Setup
 
