@@ -36,7 +36,6 @@ class Connection:
             font = pygame.font.Font(None, font_size)
             label_surf = font.render(self.label, True, color)
             # Padding is reduced for less box size at low zoom
-            min_pad = 4
             max_pad = 12
             pad_scale = max(0.5, min(1.0, zoom))
             label_padding_x = int(max_pad * pad_scale)

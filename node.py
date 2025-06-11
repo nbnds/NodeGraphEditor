@@ -78,11 +78,11 @@ class Node:
         max_text_width = int(width * 0.9)
         name_lines = self._wrap_text(self.node_name, name_font, max_text_width)
         # Draw up to 2 lines, centered
-        total_height = sum(name_font.size(line)[1] for line in name_lines)
         start_y = text_rect.centery + gap
         for i, line in enumerate(name_lines[:2]):
             name_text = name_font.render(line, True, YELLOW)
-            name_rect = name_text.get_rect(center=(width // 2, start_y + name_text.get_height() // 2 + i * name_text.get_height()))
+            name_rect = name_text.get_rect(center=(width // 2,
+                                                   start_y + name_text.get_height() // 2 + i * name_text.get_height()))
             node_surf.blit(name_text, name_rect)
         return node_surf
 

@@ -2,6 +2,9 @@ import os
 import pytest
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 import pygame
+from editor import NodeEditor
+from node import Node
+from connection import Connection
 
 @pytest.fixture(scope="session", autouse=True)
 def pygame_init_and_quit():
@@ -9,9 +12,6 @@ def pygame_init_and_quit():
     yield
     pygame.quit()
 
-from editor import NodeEditor
-from node import Node
-from connection import Connection
 
 class TestNodeEditor:
 
