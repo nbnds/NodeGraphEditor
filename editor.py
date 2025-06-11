@@ -94,20 +94,29 @@ class NodeEditor:
             self.text_input_active = False
             self.visualizer.clear_text()
         elif event.key == pygame.K_RETURN and self.text_input_active:
-            # Find the marked node (selected node)
-            marked_node = None
-            for node in self.nodes:
-                if node.selected:
-                    marked_node = node
-                    break
-            if marked_node:
-                marked_node.node_name = self.visualizer.value
-                # Also update the node name in the graph data
-                if marked_node.id in self.nx_graph.nodes:
-                    self.nx_graph.nodes[marked_node.id]['name'] = self.visualizer.value
-                # Invalidate node cache so the new name is drawn immediately
-                if hasattr(marked_node, "invalidate_cache"):
-                    marked_node.invalidate_cache()
+            # If a connection is marked, set its label
+            if self.marked_connection:
+                self.marked_connection.label = self.visualizer.value
+                # Update label in nx_graph edge
+                u = self.marked_connection.start_node.id
+                v = self.marked_connection.end_node.id
+                if self.nx_graph.has_edge(u, v):
+                    self.nx_graph[u][v]['label'] = self.visualizer.value
+            else:
+                # Find the marked node (selected node)
+                marked_node = None
+                for node in self.nodes:
+                    if node.selected:
+                        marked_node = node
+                        break
+                if marked_node:
+                    marked_node.node_name = self.visualizer.value
+                    # Also update the node name in the graph data
+                    if marked_node.id in self.nx_graph.nodes:
+                        self.nx_graph.nodes[marked_node.id]['name'] = self.visualizer.value
+                    # Invalidate node cache so the new name is drawn immediately
+                    if hasattr(marked_node, "invalidate_cache"):
+                        marked_node.invalidate_cache()
             self.text_input_active = False
             self.visualizer.clear_text()
 
@@ -190,8 +199,12 @@ class NodeEditor:
                 )
                 if not already_connected:
                     self.undo_stack.push(copy.deepcopy(self.nx_graph))  # Push before adding edge
-                    self.connections.append(Connection(selected_node, clicked_node))
+                    # Add connection with empty label
+                    conn = Connection(selected_node, clicked_node)
+                    self.connections.append(conn)
                     self.nx_graph.add_edge(selected_node.id, clicked_node.id)
+                    # Optionally: store label in nx_graph (empty string)
+                    self.nx_graph[selected_node.id][clicked_node.id]['label'] = ""
                 # After connecting, deselect the node
                 selected_node.selected = False
             # Canvas panning only if no node was hit
