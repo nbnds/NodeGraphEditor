@@ -43,3 +43,4 @@ htmlcov/
 
 # Ignore secrets (if you ever add them)
 secrets.*
+*.gpickle
