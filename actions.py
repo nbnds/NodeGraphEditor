@@ -55,3 +55,11 @@ class UndoAction(Action):
                 start_node = next(n for n in editor.nodes if n.id == start)
                 end_node = next(n for n in editor.nodes if n.id == end)
                 editor.connections.append(Connection(start_node, end_node))
+
+class SaveGraphAction(Action):
+    def execute(self, editor):
+        editor.save_graph()
+
+class LoadGraphAction(Action):
+    def execute(self, editor):
+        editor.load_graph()

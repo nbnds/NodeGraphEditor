@@ -6,7 +6,9 @@ from button import Button
 from actions import (AddNodeAction,
                      DeleteAllAction,
                      DumpGraphAction,
-                     UndoAction)
+                     UndoAction,
+                     SaveGraphAction,
+                     LoadGraphAction)
 
 if __name__ == "__main__":
     pygame.init()
@@ -16,5 +18,7 @@ if __name__ == "__main__":
     toolbar.add_button(Button(action=DeleteAllAction(), label="Clear All"))
     toolbar.add_button(Button(action=UndoAction(), label="Undo"))
     toolbar.add_button(Button(action=DumpGraphAction(), label="Print Graph Model"))
+    toolbar.add_button(Button(action=SaveGraphAction(), label="Save"))
+    toolbar.add_button(Button(action=LoadGraphAction(), label="Load"))
     editor = NodeEditor(toolbar)
     editor.run()

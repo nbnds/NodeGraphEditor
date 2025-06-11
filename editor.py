@@ -18,6 +18,7 @@ from fps_counter import FPSCounter
 from renderer import NodeEditorRenderer  # <-- new import
 from canvas_panning import CanvasPanning
 from connection_drag_state import ConnectionDragState
+import os
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -88,6 +89,15 @@ class NodeEditor:
                 pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_key_down(self, event):
+        # Save: Ctrl+S, Load: Ctrl+O
+        mod = getattr(event, "mod", 0)
+        if event.type == pygame.KEYDOWN and mod & pygame.KMOD_CTRL:
+            if event.key == pygame.K_s:
+                self.save_graph()
+                return
+            elif event.key == pygame.K_o:
+                self.load_graph()
+                return
         if event.key == pygame.K_TAB and not self.text_input_active:
             self.text_input_active = True
         elif event.key == pygame.K_ESCAPE:
@@ -288,3 +298,37 @@ class NodeEditor:
         world_x = (x + self.panning_state.offset_x * self.zoom) / self.zoom
         world_y = (y + self.panning_state.offset_y * self.zoom) / self.zoom
         return world_x, world_y
+
+    def save_graph(self, filename="graph.gpickle"):
+        import pickle
+        with open(filename, "wb") as f:
+            pickle.dump(self.nx_graph, f)
+
+    def load_graph(self, filename="graph.gpickle"):
+        import pickle
+        if not os.path.exists(filename):
+            print(f"File {filename} does not exist.")
+            return
+        with open(filename, "rb") as f:
+            self.nx_graph = pickle.load(f)
+        # Rebuild self.nodes and self.connections from nx_graph
+        self.nodes.clear()
+        self.connections.clear()
+        id_to_node = {}
+        # Recreate nodes
+        for node_id, data in self.nx_graph.nodes(data=True):
+            x, y = data.get('pos', (0, 0))
+            node = Node(x, y, node_id)
+            node.node_name = data.get('name', node.node_name)
+            id_to_node[node_id] = node
+            self.nodes.append(node)
+        # Recreate connections
+        for u, v, data in self.nx_graph.edges(data=True):
+            if u in id_to_node and v in id_to_node:
+                label = data.get('label', "")
+                conn = Connection(id_to_node[u], id_to_node[v], label=label)
+                self.connections.append(conn)
+        # Reset selection and drag state
+        self.selection.clear_selection(self.nodes)
+        self.marked_connection = None
+        self._node_drag_in_progress = False
