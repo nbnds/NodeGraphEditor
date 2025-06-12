@@ -65,61 +65,60 @@ class Node:
             max(1, int(2 * zoom)),
             border_radius=border_radius
         )
-        # Draw serial number
-        font = pygame.font.Font(None, max(12, int(24 * zoom)))
-        text = font.render(str(self.id), True, WHITE)
-        text_rect = text.get_rect(center=(width // 2, height*0.6 // 2))
-        node_surf.blit(text, text_rect)
-        # Draw node name
+        # Draw node id at fixed distance from bottom
+        id_font = pygame.font.Font(None, max(12, int(14 * zoom)))
+        id_text = id_font.render(str(self.id), True, WHITE)
+        id_margin_bottom = int(8 * zoom)
+        id_y = height - id_margin_bottom - id_text.get_height() // 2
+        id_rect = id_text.get_rect(center=(width // 2, id_y))
+        node_surf.blit(id_text, id_rect)
+
+        # Calculate area for node name (from top to just above the id)
+        name_area_top = 0
+        name_area_bottom = id_rect.top - int(4 * zoom)
+        name_area_height = name_area_bottom - name_area_top
+
+        # Prepare node name lines (up to 3)
         if self.node_name is None:
             self.node_name = "--"
-        gap = int(self.height * 0.20 * zoom)
         name_font = pygame.font.Font(None, max(16, int(22 * zoom)))
         max_text_width = int(width * 0.9)
-        name_lines = self._wrap_text(self.node_name, name_font, max_text_width)
-        # Draw up to 2 lines, centered
-        start_y = text_rect.centery + gap
-        for i, line in enumerate(name_lines[:2]):
+        name_lines = self._wrap_text(self.node_name, name_font, max_text_width, max_lines=3)
+        total_name_height = len(name_lines) * name_font.get_height()
+        # Center name lines vertically in the name area
+        start_y = name_area_top + (name_area_height - total_name_height) // 2
+        for i, line in enumerate(name_lines):
             name_text = name_font.render(line, True, YELLOW)
             name_rect = name_text.get_rect(center=(width // 2,
                                                    start_y + name_text.get_height() // 2 + i * name_text.get_height()))
             node_surf.blit(name_text, name_rect)
         return node_surf
 
-    def _wrap_text(self, text, font, max_width):
-        # Try to break text into up to 2 lines, breaking on spaces if possible
+    def _wrap_text(self, text, font, max_width, max_lines=2):
+        # Try to break text into up to max_lines lines, breaking on spaces if possible
         words = text.split(' ')
-        if len(words) == 1:
-            # No spaces, just hard break if needed
-            if font.size(text)[0] <= max_width:
-                return [text]
-            # Break at character level
-            for i in range(len(text), 0, -1):
-                if font.size(text[:i])[0] <= max_width:
-                    return [text[:i], text[i:]]
-            return [text]  # fallback
-        # Try to fit as many words as possible on the first line
-        line1 = ""
-        line2 = ""
-        for i in range(1, len(words)+1):
-            candidate = ' '.join(words[:i])
-            if font.size(candidate)[0] > max_width:
-                line1 = ' '.join(words[:i-1]) if i > 1 else words[0]
-                line2 = ' '.join(words[i-1:]) if i > 1 else ' '.join(words[1:])
-                break
-        else:
-            line1 = text
-            line2 = ""
-        if not line1:
-            line1 = words[0]
-            line2 = ' '.join(words[1:])
-        if line2 and font.size(line2)[0] > max_width:
-            # If second line is still too long, hard break
-            for i in range(len(line2), 0, -1):
-                if font.size(line2[:i])[0] <= max_width:
-                    return [line1, line2[:i] + '…']
-            return [line1, line2]
-        return [line1] if not line2 else [line1, line2]
+        lines = []
+        while words and len(lines) < max_lines:
+            for i in range(len(words), 0, -1):
+                candidate = ' '.join(words[:i])
+                if font.size(candidate)[0] <= max_width:
+                    lines.append(candidate)
+                    words = words[i:]
+                    break
+            else:
+                # If no fit, hard break
+                for i in range(len(words[0]), 0, -1):
+                    if font.size(words[0][:i])[0] <= max_width:
+                        lines.append(words[0][:i])
+                        words[0] = words[0][i:]
+                        break
+                else:
+                    lines.append(words.pop(0))
+        if words and len(lines) == max_lines:
+            # Add ellipsis to last line if text remains
+            if lines:
+                lines[-1] = lines[-1].rstrip() + '…'
+        return lines
 
     def draw(self, screen, offset_x=0.0, offset_y=0.0, zoom=1.0):
         x = int((self.x - offset_x) * zoom)
