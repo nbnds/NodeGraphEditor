@@ -1,6 +1,6 @@
 import pygame
 from constants import (NODE_WIDTH, NODE_HEIGHT,
-                         GRAY, BLUE, YELLOW,
+                         GRAY, INPUT_CONNECTOR_COLOR, YELLOW,
                          RED, WHITE, CONNECTION_RADIUS)
 
 class Node:
@@ -143,8 +143,9 @@ class Node:
             int((output_pos[0] - offset_x) * zoom),
             int((output_pos[1] - offset_y) * zoom),
         )
-        conn_radius = max(2, int(CONNECTION_RADIUS * zoom))
-        pygame.draw.circle(screen, BLUE, input_screen, conn_radius)
+        # Make connection points a bit smaller
+        conn_radius = max(1, int(CONNECTION_RADIUS * zoom * 0.6))
+        pygame.draw.circle(screen, INPUT_CONNECTOR_COLOR, input_screen, conn_radius)
         pygame.draw.circle(screen, RED, output_screen, conn_radius)
 
     def invalidate_cache(self):

@@ -4,6 +4,7 @@ BORDER_GRAY = (160, 160, 160)
 DARK_GRAY = (64, 64, 64)
 GRAY = (128, 128, 128)
 BLUE = (0, 122, 204)
+INPUT_CONNECTOR_COLOR = (0, 180, 255) # Cyan-like, bright and distinctive
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
