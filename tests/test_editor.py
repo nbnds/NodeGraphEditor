@@ -1,10 +1,13 @@
 import os
 import pytest
+import pickle
+import logging
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 import pygame
 from editor import NodeEditor
 from node import Node
 from connection import Connection
+import networkx as nx
 
 @pytest.fixture(scope="session", autouse=True)
 def pygame_init_and_quit():
@@ -121,3 +124,161 @@ class TestNodeEditor:
         assert node.node_name == new_name
         # And the graph's node attribute should be updated
         assert editor.nx_graph.nodes[1]['name'] == new_name
+
+    def test_load_graph_id_collision(self, editor):
+        """
+        When loading a graph, node ids should not collide with existing nodes.
+        After loading, new nodes should get the next free id.
+        """
+
+        # Use variables for initial node ids and derive coordinates from id
+        initial_ids = [1, 2, 3]
+        for nid in initial_ids:
+            node = Node(nid * 10, nid * 10, nid)
+            editor.nodes.append(node)
+            editor.nx_graph.add_node(nid, pos=(nid * 10, nid * 10), name=chr(64 + nid))  # names: 'A', 'B', 'C'
+        editor.next_node_id = max(initial_ids) + 1
+
+        logging.info(f"[TEST] Initial node set: ids={initial_ids}, node_names={[chr(64 + i) for i in initial_ids]}")
+
+        # Prepare a graph file with nodes having ids that may collide
+        loaded_ids = [2, 3, 4]
+        G = nx.DiGraph()
+        for nid in loaded_ids:
+            G.add_node(nid, pos=(nid * 100, nid * 100), name=chr(86 + nid))  # names: 'X', 'Y', 'Z'
+        graph_file = os.path.join(os.path.dirname(__file__), "test_graph.pickle")
+        with open(graph_file, "wb") as f:
+            pickle.dump(G, f)
+
+        logging.info(f"[TEST] Graph file node ids: {loaded_ids}, node_names={[chr(86 + i) for i in loaded_ids]}")
+
+        # Load the graph (this replaces all nodes and connections)
+        editor.load_graph(graph_file)
+
+        # Remove the test file after loading
+        os.remove(graph_file)
+
+        # Collect all node ids after loading
+        ids = [n.id for n in editor.nodes]
+        logging.info(f"[TEST] Editor node ids after load: {ids}")
+        loaded_names = set(n.node_name for n in editor.nodes)
+        logging.info(f"[TEST] Editor node names after load: {loaded_names}")
+
+        # There should be no duplicate ids
+        logging.info(f"[ASSERT] Checking uniqueness: ids={ids}, set(ids)={set(ids)}")
+        assert len(ids) == len(set(ids)), f"Loaded node IDs were not unique: {ids}"
+        # All expected node names should be present
+        expected_names = {chr(86 + i) for i in loaded_ids}
+        logging.info(f"[ASSERT] Checking names: expected={expected_names}, loaded={loaded_names}")
+        assert expected_names.issubset(loaded_names), (
+            f"Expected node names {expected_names}, got {loaded_names}"
+        )
+        # next_node_id should be one higher than the highest id
+        logging.info(f"[ASSERT] Checking next_node_id: next_node_id={editor.next_node_id}, max(ids)+1={max(ids) + 1}")
+        assert editor.next_node_id == max(ids) + 1, (
+            f"next_node_id should be {max(ids) + 1}, got {editor.next_node_id}"
+        )
+
+        # Add a new node and check that its id does not collide
+        new_node = Node(999, 999, editor.next_node_id)
+        editor.nodes.append(new_node)
+        editor.nx_graph.add_node(editor.next_node_id, pos=(999, 999), name="NEW")
+        ids_after = [n.id for n in editor.nodes]
+        logging.info(f"[ASSERT] After add: ids_after={ids_after}, new_node.id={new_node.id}, previous_ids={ids}")
+        assert len(ids_after) == len(set(ids_after)), (
+            f"After adding, node IDs were not unique: {ids_after}"
+        )
+        assert new_node.id not in ids[:-1], (
+            f"New node id {new_node.id} collides with loaded ids {ids}"
+        )
+
+    def test_load_graph_with_id_collision_and_edge_remap(self, editor, caplog):
+        """
+        Test that when loading a graph with node id collisions, both nodes and edges are remapped correctly.
+        This test creates a graph file with overlapping node ids and edges, loads it, and verifies that:
+        - Node ids are unique after loading.
+        - Edges are remapped to the new node ids.
+        - Node names and edge labels are preserved.
+        - All steps are logged for clarity.
+        """
+        caplog.set_level(logging.INFO)
+
+        # Initial state: add nodes with ids 1, 2, 3 to the editor
+        initial_ids = [1, 2, 3]
+        for nid in initial_ids:
+            node = Node(nid * 10, nid * 10, nid)
+            editor.nodes.append(node)
+            editor.nx_graph.add_node(nid, pos=(nid * 10, nid * 10), name=f"Editor{nid}")
+        editor.next_node_id = max(initial_ids) + 1
+        logging.info(f"[TEST] Initial editor node ids: {initial_ids}")
+
+        # Prepare a graph file with colliding node ids and edges
+        loaded_ids = [2, 3, 4]
+        G = nx.DiGraph()
+        for nid in loaded_ids:
+            G.add_node(nid, pos=(nid * 100, nid * 100), name=f"Node-{nid}")
+        # Add edges between these nodes (2->3, 3->4, 4->2)
+        G.add_edge(2, 3, label="A")
+        G.add_edge(3, 4, label="B")
+        G.add_edge(4, 2, label="C")
+        graph_file = os.path.join(os.path.dirname(__file__), "test_graph_collision.pickle")
+        with open(graph_file, "wb") as f:
+            pickle.dump(G, f)
+        logging.info(f"[TEST] Graph file node ids: {loaded_ids}")
+        logging.info(f"[TEST] Graph file edges: {list(G.edges(data=True))}")
+
+        # Load the graph (should remap ids and edges)
+        editor.load_graph(graph_file)
+        os.remove(graph_file)
+
+        # Gather loaded node ids and names
+        ids = [n.id for n in editor.nodes]
+        names = [n.node_name for n in editor.nodes]
+        logging.info(f"[TEST] Editor node ids after load: {ids}")
+        logging.info(f"[TEST] Editor node names after load: {names}")
+
+        # Assert node ids are unique
+        assert len(ids) == len(set(ids)), f"Node IDs are not unique after remapping: {ids}"
+
+        # Build mapping from node names to ids for easier edge verification
+        name_to_id = {n.node_name: n.id for n in editor.nodes}
+        logging.info(f"[TEST] Name to id mapping: {name_to_id}")
+
+        # Gather all edges from the editor's nx_graph
+        edges = list(editor.nx_graph.edges(data=True))
+        logging.info(f"[TEST] Editor edges after load: {edges}")
+
+        # Check that all expected node names are present
+        expected_names = {f"Node-{nid}" for nid in loaded_ids}
+        assert expected_names.issubset(set(names)), f"Expected node names {expected_names}, got {set(names)}"
+
+        # Check that all expected edges exist and labels are preserved
+        expected_edges = [
+            ("Node-2", "Node-3", "A"),
+            ("Node-3", "Node-4", "B"),
+            ("Node-4", "Node-2", "C"),
+        ]
+        for src_name, dst_name, label in expected_edges:
+            src_id = name_to_id[src_name]
+            dst_id = name_to_id[dst_name]
+            assert editor.nx_graph.has_edge(src_id, dst_id), (
+                f"Missing edge {src_name}->{dst_name}"
+            )
+            edge_label = editor.nx_graph[src_id][dst_id].get("label", None)
+            assert edge_label == label, (
+                f"Edge label mismatch for {src_name}->{dst_name}: "
+                f"expected '{label}', got '{edge_label}'"
+            )
+            logging.info(
+                "[ASSERT] Edge %s(%s)->%s(%s) with label '%s' exists and is correct.",
+                src_name, src_id, dst_name, dst_id, label
+            )
+
+        # Check that next_node_id is correct
+        expected_next_id = max(ids) + 1
+        assert editor.next_node_id == expected_next_id, (
+            f"next_node_id should be {expected_next_id}, got {editor.next_node_id}"
+        )
+        logging.info(
+            "[ASSERT] next_node_id is correct: %s", editor.next_node_id
+        )

@@ -315,19 +315,45 @@ class NodeEditor:
         self.nodes.clear()
         self.connections.clear()
         id_to_node = {}
-        # Recreate nodes
-        for node_id, data in self.nx_graph.nodes(data=True):
+        used_ids = set()
+        # Recreate nodes, resolve id collisions
+        for orig_id, data in self.nx_graph.nodes(data=True):
             x, y = data.get('pos', (0, 0))
+            # Find next free id if collision
+            node_id = orig_id
+            while node_id in used_ids:
+                node_id += 1
+            used_ids.add(node_id)
             node = Node(x, y, node_id)
             node.node_name = data.get('name', node.node_name)
-            id_to_node[node_id] = node
+            id_to_node[orig_id] = node  # map original id to new node
             self.nodes.append(node)
+            # Ensure nx_graph node id matches node.id
+            if node_id != orig_id:
+                # Remove old node and add new node with updated id and data
+                self.nx_graph.remove_node(orig_id)
+                self.nx_graph.add_node(node_id, **data)
+        # After remapping nodes:
+        # Build a mapping from old to new IDs
+        old_to_new_id = {orig_id: node.id for orig_id, node in id_to_node.items()}
+
+        # Collect all edges and their data
+        edges = list(self.nx_graph.edges(data=True))
+        self.nx_graph.clear_edges()  # Remove all edges
+
+        # Re-add edges with remapped node IDs
+        for u, v, data in edges:
+            new_u = old_to_new_id.get(u, u)
+            new_v = old_to_new_id.get(v, v)
+            self.nx_graph.add_edge(new_u, new_v, **data)
         # Recreate connections
-        for u, v, data in self.nx_graph.edges(data=True):
+        for u, v, data in list(self.nx_graph.edges(data=True)):
             if u in id_to_node and v in id_to_node:
                 label = data.get('label', "")
                 conn = Connection(id_to_node[u], id_to_node[v], label=label)
                 self.connections.append(conn)
+        # Set next_node_id to one higher than the highest used id
+        self.next_node_id = max([n.id for n in self.nodes], default=0) + 1
         # Reset selection and drag state
         self.selection.clear_selection(self.nodes)
         self.marked_connection = None
