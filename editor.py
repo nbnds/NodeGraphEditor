@@ -296,17 +296,20 @@ class NodeEditor:
                 return True
         return False
 
-    def try_delete_node(self, world_x, world_y):
+    def try_delete_node(self, world_x: float, world_y: float) -> bool:
+        """
+        Try to delete the node at the given world coordinates.
+        Removes all connections to/from the node and updates the graph.
+        Returns True if a node was deleted, False otherwise.
+        """
         for node in reversed(self.nodes):
             if node.contains_point(world_x, world_y):
                 # Remove all connections to/from this node
-                self.connections._connections = [
-                    c for c in self.connections
-                    if c.start_node != node and c.end_node != node
-                ]
+                self.connections.remove_connections_for_node(node)
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.nodes.remove(node)
-                self.nx_graph.remove_node(node.id)
+                if node.id in self.nx_graph.nodes:
+                    self.nx_graph.remove_node(node.id)
                 node.selected = False  # Deselect the node if it was selected
                 return True
         return False

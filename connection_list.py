@@ -22,3 +22,9 @@ class ConnectionList:
 
     def filter(self, predicate):
         return [c for c in self._connections if predicate(c)]
+
+    def remove_connections_for_node(self, node):
+        self._connections = [
+            c for c in self._connections
+            if c.start_node != node and c.end_node != node
+        ]
