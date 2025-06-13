@@ -70,24 +70,30 @@ class NodeEditor:
             self.clock.tick()
 
     def dispatch_event(self, event):
-            if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-            elif event.type == pygame.VIDEORESIZE:
-                self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                self.handle_mouse_down(event)
-            elif event.type == pygame.MOUSEBUTTONUP:
-                self.handle_mouse_up(event)
-            elif event.type == pygame.MOUSEMOTION:
-                self.handle_mouse_motion(event)
-            elif event.type == pygame.MOUSEWHEEL:
-                self.handle_mouse_wheel(event)
-            elif event.type == pygame.KEYDOWN:
-                self.handle_key_down(event)
-            elif event.type == pygame.DROPFILE:
-                file_path = event.file # type: ignore
-                pygame.display.set_caption(f"Node Graph Editor - {file_path}")
+        dispatch_table = {
+            pygame.QUIT: self._handle_quit,
+            pygame.VIDEORESIZE: self._handle_resize,
+            pygame.MOUSEBUTTONDOWN: self.handle_mouse_down,
+            pygame.MOUSEBUTTONUP: self.handle_mouse_up,
+            pygame.MOUSEMOTION: self.handle_mouse_motion,
+            pygame.MOUSEWHEEL: self.handle_mouse_wheel,
+            pygame.KEYDOWN: self.handle_key_down,
+            pygame.DROPFILE: self._handle_dropfile,
+        }
+        handler = dispatch_table.get(event.type)
+        if handler:
+            handler(event)
+
+    def _handle_quit(self, event):
+        pygame.quit()
+        sys.exit()
+
+    def _handle_resize(self, event):
+        self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
+
+    def _handle_dropfile(self, event):
+        file_path = event.file  # type: ignore
+        pygame.display.set_caption(f"Node Graph Editor - {file_path}")
 
     def handle_key_down(self, event):
         # Save: Ctrl+S, Load: Ctrl+O
