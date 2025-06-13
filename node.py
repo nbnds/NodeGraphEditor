@@ -16,6 +16,7 @@ class Node:
         self.selected: bool = False
         self._cache_surface = None
         self._cache_params = None  # (width, height, selected, zoom, id)
+        self.file_dialog_status = None  # For file dialog status    
 
     def get_right_center(self):
         return (self.x + self.width, self.y + self.height / 2)
@@ -49,22 +50,50 @@ class Node:
     def _render_surface(self, width, height, border_radius, selected, zoom):
         node_surf = pygame.Surface((width, height), pygame.SRCALPHA)
         alpha = 225
-        # Draw node background
-        pygame.draw.rect(
-            node_surf,
-            (64, 64, 64, alpha),
-            (0, 0, width, height),
-            border_radius=border_radius
-        )
-        # Draw node border
-        border_color = (0, 255, 0) if selected else GRAY
+        # --- Outer outline for file dialog status ---
+        outer_border_width = max(2, int(4 * zoom))
+        inner_border_width = max(1, int(2 * zoom))
+        # Draw outer border if file_dialog_status is set
+        if self.file_dialog_status == "selected":
+            outer_color = (0, 128, 255)  # blue
+        elif self.file_dialog_status == "cancelled":
+            outer_color = (255, 0, 0)    # red
+        else:
+            outer_color = None
+
+        if outer_color:
+            pygame.draw.rect(
+                node_surf,
+                outer_color,
+                (0, 0, width, height),
+                outer_border_width,
+                border_radius=border_radius
+            )
+
+        # --- Inner selection outline (always if selected) ---
+        border_color = GRAY
+        if selected:
+            border_color = (0, 255, 0)  # green
         pygame.draw.rect(
             node_surf,
             border_color,
-            (0, 0, width, height),
-            max(1, int(2 * zoom)),
-            border_radius=border_radius
+            (outer_border_width // 2, outer_border_width // 2, width - outer_border_width, height - outer_border_width),
+            inner_border_width,
+            border_radius=max(0, border_radius - outer_border_width // 2)
         )
+
+        # --- Draw node background inside both outlines ---
+        bg_offset = outer_border_width
+        bg_width = width - 2 * bg_offset
+        bg_height = height - 2 * bg_offset
+        bg_radius = max(0, border_radius - bg_offset)
+        pygame.draw.rect(
+            node_surf,
+            (64, 64, 64, alpha),
+            (bg_offset, bg_offset, bg_width, bg_height),
+            border_radius=bg_radius
+        )
+
         # Draw node id at fixed distance from bottom
         id_font = pygame.font.Font(None, max(12, int(14 * zoom)))
         id_text = id_font.render(str(self.id), True, WHITE)

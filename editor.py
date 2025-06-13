@@ -19,6 +19,9 @@ from renderer import NodeEditorRenderer  # <-- new import
 from canvas_panning import CanvasPanning
 from connection_drag_state import ConnectionDragState
 from graph_persistence import GraphPersistence  # new import
+import wx  # <-- Add this import
+import os  # <-- Add this import
+from pygame._sdl2 import video
 
 class NodeEditor:
     def __init__(self, toolbar=None, undo_depth=10):
@@ -43,6 +46,7 @@ class NodeEditor:
         self.panning_state = CanvasPanning()
         self.marked_connection = None  # Track the marked connection
         self.graph_persistence = GraphPersistence(self)
+        self.wx_app = wx.App(False)  # <-- Add this line to initialize wxPython
 
     def run(self):
         while True:
@@ -136,6 +140,82 @@ class NodeEditor:
                         marked_node.invalidate_cache()
             self.text_input_active = False
             self.visualizer.clear_text()
+        elif event.key == pygame.K_e:  # <-- Add this block for 'E' key
+            # Only if a node is selected
+            selected_nodes = [n for n in self.nodes if n.selected]
+            if selected_nodes:
+                node = selected_nodes[0]
+                # Open wxPython file dialog
+                dlg = wx.FileDialog(None, "Choose a file", wildcard="All files (*.*)|*.*",
+                                    style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+                if dlg.ShowModal() == wx.ID_OK:
+                    file_path = dlg.GetPath()
+                    setattr(node, "file_path", file_path)
+                    setattr(node, "file_dialog_status", "selected")  # blue outline
+                    # Set node name to file name
+                    node.node_name = os.path.basename(file_path)
+                else:
+                    setattr(node, "file_dialog_status", "cancelled")  # red outline
+                dlg.Destroy()
+                # Invalidate node cache so color updates immediately
+                if hasattr(node, "invalidate_cache"):
+                    node.invalidate_cache()
+        elif event.key == pygame.K_l:  # Show ListCtrl on 'L'
+            selected_nodes = [n for n in self.nodes if n.selected]
+            if selected_nodes:
+                node = selected_nodes[0]
+                frame = wx.Frame(None, title="Sample List", size=wx.Size(400, 300))
+                # Calculate position: left of node, vertically aligned, relative to pygame window
+                try:
+                    win_x, win_y =  pygame.display.get_window_position()
+                    print(f"Window position: {win_x}, {win_y}")
+                except Exception:
+                    win_x, win_y = 0, 0
+
+                node_screen_x = int((node.x - self.panning_state.offset_x) * self.zoom)
+                node_screen_y = int((node.y - self.panning_state.offset_y) * self.zoom)
+                frame_width, frame_height = frame.GetSize()
+                # Place to the left of the node, aligned vertically (centered)
+                pos_x = max(0, win_x + node_screen_x - frame_width)
+                pos_y = max(0, win_y + node_screen_y + int(node.height * self.zoom / 2) - frame_height // 2)
+                frame.SetPosition(wx.Point(pos_x, pos_y))
+                panel = wx.Panel(frame)
+                list_ctrl = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.BORDER_SUNKEN)
+                list_ctrl.InsertColumn(0, "ID", width=80)
+                list_ctrl.InsertColumn(1, "Name", width=200)
+                list_ctrl.InsertColumn(2, "Value", width=100)
+                sample_data = [
+                    (1, "Alpha", "42"),
+                    (2, "Beta", "99"),
+                    (3, "Gamma", "123"),
+                ]
+                for idx, name, value in sample_data:
+                    index = list_ctrl.InsertItem(list_ctrl.GetItemCount(), str(idx))
+                    list_ctrl.SetItem(index, 1, name)
+                    list_ctrl.SetItem(index, 2, value)
+                sizer = wx.BoxSizer(wx.VERTICAL)
+                sizer.Add(list_ctrl, 1, wx.EXPAND | wx.ALL, 10)
+                panel.SetSizer(sizer)
+
+                def on_item_activated(evt):
+                    item_idx = evt.GetIndex()
+                    name_value = list_ctrl.GetItemText(item_idx, 1)
+                    node.node_name = name_value
+                    # Also update the node name in the graph data
+                    if node.id in self.nx_graph.nodes:
+                        self.nx_graph.nodes[node.id]['name'] = name_value
+                    if hasattr(node, "invalidate_cache"):
+                        node.invalidate_cache()
+                    frame.Hide()
+                    frame.DestroyLater()
+
+                def on_close(evt):
+                    frame.Hide()
+                    frame.DestroyLater()
+
+                list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, on_item_activated)
+                frame.Bind(wx.EVT_CLOSE, on_close)
+                frame.Show()
 
     def handle_mouse_down(self, event):
         btn = self.toolbar.get_clicked_button(event.pos)
@@ -321,7 +401,21 @@ class NodeEditor:
         return world_x, world_y
 
     def save_graph(self, filename="graph.gpickle"):
+        # Before saving, update nx_graph with current node names
+        for node in self.nodes:
+            if node.id in self.nx_graph.nodes:
+                self.nx_graph.nodes[node.id]['name'] = node.node_name
         self.graph_persistence.save_graph(filename)
 
     def load_graph(self, filename="graph.gpickle"):
         self.graph_persistence.load_graph(filename)
+        # After loading, update Node objects with names from nx_graph
+        id_to_name = {}
+        for node_id, data in self.nx_graph.nodes(data=True):
+            if 'name' in data:
+                id_to_name[node_id] = data['name']
+        for node in self.nodes:
+            if node.id in id_to_name:
+                node.node_name = id_to_name[node.id]
+                if hasattr(node, "invalidate_cache"):
+                    node.invalidate_cache()
