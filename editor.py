@@ -140,19 +140,30 @@ class NodeEditor:
     def handle_mouse_down(self, event):
         btn = self.toolbar.get_clicked_button(event.pos)
         if btn:
-            # Execute the action associated with the button
             btn.action.execute(self)
             return
 
         world_x, world_y = self.screen_to_world(event.pos)
+        clicked_node = self._find_node_at(world_x, world_y)
+        self._update_connection_marking(clicked_node, world_x, world_y)
 
+        if event.button == pygame.BUTTON_LEFT:
+            self._handle_left_mouse_down(clicked_node, world_x, world_y)
+        elif event.button == pygame.BUTTON_MIDDLE:
+            self._handle_middle_mouse_down(world_x, world_y)
+        elif event.button == pygame.BUTTON_RIGHT:
+            self._handle_right_mouse_down(clicked_node, world_x, world_y, event)
+
+    def _find_node_at(self, world_x, world_y):
         # First, check if a node is under the cursor
         clicked_node = None
         for node in reversed(self.nodes):
             if node.contains_point(world_x, world_y):
                 clicked_node = node
                 break
+        return clicked_node
 
+    def _update_connection_marking(self, clicked_node, world_x, world_y):
         # Only check for connection marking if no node is under the cursor
         if clicked_node is None:
             marked = None
@@ -176,57 +187,57 @@ class NodeEditor:
                 conn.marked = False
             self.marked_connection = None
 
-        if event.button == pygame.BUTTON_LEFT:
-            # Use the clicked_node found above
-            if clicked_node is not None:
-                clicked_node.dragging = True
-                clicked_node.drag_offset = (world_x - clicked_node.x, world_y - clicked_node.y)
-                # Delegate selection logic:
-                self.selection.select_node(clicked_node, self.nodes)
-                # --- Selected node should be always on top ---
-                self.nodes.remove(clicked_node)
-                self.nodes.append(clicked_node)
-                # --- Push undo only once per drag start ---
-                if not self._node_drag_in_progress:
-                    self.undo_stack.push(copy.deepcopy(self.nx_graph))
-                    self._node_drag_in_progress = True
-            else:
-                self.selection.clear_selection(self.nodes)
-        elif event.button == pygame.BUTTON_MIDDLE:
-            # Check if a node was clicked
-            if self.try_delete_node(world_x, world_y):
-                return
-            # Check if a connection was clicked
-            self.try_delete_connection(world_x, world_y)
-        elif event.button == pygame.BUTTON_RIGHT:
-            # Check if a node is under the cursor
-            clicked_node = None
-            for node in reversed(self.nodes):
-                if node.contains_point(world_x, world_y):
-                    clicked_node = node
-                    break
-            selected_nodes = [n for n in self.nodes if n.selected]
-            # If a node is selected and another node is right-clicked, connect them
-            if selected_nodes and clicked_node is not None and selected_nodes[0] != clicked_node:
-                selected_node = selected_nodes[0]
-                already_connected = any(
-                    (c.start_node == selected_node and c.end_node == clicked_node) or
-                    (c.start_node == clicked_node and c.end_node == selected_node)
-                    for c in self.connections
-                )
-                if not already_connected:
-                    self.undo_stack.push(copy.deepcopy(self.nx_graph))  # Push before adding edge
-                    # Add connection with empty label
-                    conn = Connection(selected_node, clicked_node)
-                    self.connections.append(conn)
-                    self.nx_graph.add_edge(selected_node.id, clicked_node.id)
-                    # Optionally: store label in nx_graph (empty string)
-                    self.nx_graph[selected_node.id][clicked_node.id]['label'] = ""
-                # After connecting, deselect the node
-                selected_node.selected = False
-            # Canvas panning only if no node was hit
-            elif clicked_node is None:
-                self.panning_state.start_panning(event.pos)
+    def _handle_left_mouse_down(self, clicked_node, world_x, world_y):
+        # Use the clicked_node found above
+        if clicked_node is not None:
+            clicked_node.dragging = True
+            clicked_node.drag_offset = (world_x - clicked_node.x, world_y - clicked_node.y)
+            # Delegate selection logic:
+            self.selection.select_node(clicked_node, self.nodes)
+            # --- Selected node should be always on top ---
+            self.nodes.remove(clicked_node)
+            self.nodes.append(clicked_node)
+            # --- Push undo only once per drag start ---
+            if not self._node_drag_in_progress:
+                self.undo_stack.push(copy.deepcopy(self.nx_graph))
+                self._node_drag_in_progress = True
+        else:
+            self.selection.clear_selection(self.nodes)
+
+    def _handle_middle_mouse_down(self, world_x, world_y):
+        # Check if a node was clicked
+        if self.try_delete_node(world_x, world_y):
+            return
+        # Check if a connection was clicked
+        self.try_delete_connection(world_x, world_y)
+
+    def _handle_right_mouse_down(self, clicked_node, world_x, world_y, event):
+        # Check if a node is under the cursor
+        clicked_node = None
+        for node in reversed(self.nodes):
+            if node.contains_point(world_x, world_y):
+                clicked_node = node
+                break
+        selected_nodes = [n for n in self.nodes if n.selected]
+        # If a node is selected and another node is right-clicked, connect them
+        if selected_nodes and clicked_node is not None and selected_nodes[0] != clicked_node:
+            selected_node = selected_nodes[0]
+            already_connected = any(
+                (c.start_node == selected_node and c.end_node == clicked_node) or
+                (c.start_node == clicked_node and c.end_node == selected_node)
+                for c in self.connections
+            )
+            if not already_connected:
+                self.undo_stack.push(copy.deepcopy(self.nx_graph))  # Push before adding edge
+                # Add connection with empty label
+                conn = Connection(selected_node, clicked_node)
+                self.connections.append(conn)
+                self.nx_graph.add_edge(selected_node.id, clicked_node.id)
+                # Optionally: store label in nx_graph (empty string)
+                self.nx_graph[selected_node.id][clicked_node.id]['label'] = ""
+        # Canvas panning only if no node was hit
+        elif clicked_node is None:
+            self.panning_state.start_panning(event.pos)
 
     def handle_mouse_up(self, event):
         if event.button == pygame.BUTTON_LEFT:
