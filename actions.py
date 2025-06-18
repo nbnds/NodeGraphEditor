@@ -1,4 +1,5 @@
 from node import Node
+from networkx.readwrite import json_graph
 import copy
 
 class Action:
@@ -36,10 +37,12 @@ class DeleteAllAction(Action):
 class DumpGraphAction(Action):
     def execute(self, editor):
         print("=== Current Graph Model ===")
-        print(editor.nx_graph)
+        from pprint import pprint
+        pprint(json_graph.node_link_data(editor.nx_graph, edges="edges"))
         print("=== Undo Stack (most recent last) ===")
         for i, g in enumerate(editor.undo_stack.stack):
             print(f"UndoStack[{i}]: {g}")
+            pprint(json_graph.node_link_data(g, edges="edges"))
         print("======================")
 
 class UndoAction(Action):
