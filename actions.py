@@ -2,6 +2,8 @@ from node import Node
 from networkx.readwrite import json_graph
 from connection import Connection
 from editor import NodeEditor
+import copy
+
 class Action:
     def execute(self, editor):
         pass  # Baseclass for actions
@@ -13,6 +15,8 @@ class NoOpAction(Action):
 
 class AddNodeAction(Action):
     def execute(self, editor):
+        editor._sync_node_names_to_graph()
+        editor.undo_stack.push(copy.deepcopy(editor.nx_graph))
         center_x = editor.screen.get_width() // 2
         center_y = editor.screen.get_height() // 2
         world_x = (center_x + editor.panning_state.offset_x * editor.zoom) / editor.zoom
@@ -34,27 +38,16 @@ class DeleteAllAction(Action):
 
 class DumpGraphAction(Action):
     def execute(self, editor):
-
-        from pprint import pprint
-        pprint(json_graph.node_link_data(editor.nx_graph, edges="edges"))
+        print("=== Current Graph Model ===")
+        print(editor.nx_graph)
+        print("=== Undo Stack (most recent last) ===")
+        for i, g in enumerate(editor.undo_stack.stack):
+            print(f"UndoStack[{i}]: {g}")
         print("======================")
 
 class UndoAction(Action):
-    def execute(self, editor:NodeEditor):
-        prev_graph = editor.undo_stack.pop()
-        if prev_graph:
-            # Restore the previous graph state
-            editor.nx_graph = prev_graph
-            # Synchronize nodes and connections
-            editor.nodes.clear()
-            editor.connections.clear()
-            for node_id, data in editor.nx_graph.nodes(data=True):
-                pos = data.get('pos', (0, 0))
-                editor.nodes.append(Node(pos[0], pos[1], node_id))
-            for start, end in editor.nx_graph.edges():
-                start_node = next(n for n in editor.nodes if n.id == start)
-                end_node = next(n for n in editor.nodes if n.id == end)
-                editor.connections.append(Connection(start_node, end_node))
+    def execute(self, editor):
+        editor.undo()
 
 class SaveGraphAction(Action):
     def execute(self, editor):

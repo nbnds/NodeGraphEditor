@@ -2,7 +2,7 @@ from collections import deque
 import copy
 
 class UndoStack:
-    def __init__(self, max_depth=10):
+    def __init__(self, max_depth=20):
         self.stack = deque(maxlen=max_depth)
 
     def push(self, nx_graph):

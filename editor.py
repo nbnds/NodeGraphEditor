@@ -21,7 +21,7 @@ from connection_drag_state import ConnectionDragState
 from graph_persistence import GraphPersistence  # new import
 
 class NodeEditor:
-    def __init__(self, toolbar=None, undo_depth=10):
+    def __init__(self, toolbar=None, undo_depth=20):
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
@@ -43,6 +43,8 @@ class NodeEditor:
         self.panning_state = CanvasPanning()
         self.marked_connection = None  # Track the marked connection
         self.graph_persistence = GraphPersistence(self)
+        # Push initial empty graph state to undo stack
+        self.undo_stack.push(copy.deepcopy(self.nx_graph))
 
     def run(self):
         while True:
@@ -111,6 +113,9 @@ class NodeEditor:
             self.text_input_active = False
             self.visualizer.clear_text()
         elif event.key == pygame.K_RETURN and self.text_input_active:
+            # Push undo before renaming node or connection
+            self._sync_node_names_to_graph()
+            self.undo_stack.push(copy.deepcopy(self.nx_graph))
             # If a connection is marked, set its label
             if self.marked_connection:
                 self.marked_connection.label = self.visualizer.value
@@ -199,6 +204,7 @@ class NodeEditor:
             self.nodes.append(clicked_node)
             # --- Push undo only once per drag start ---
             if not self._node_drag_in_progress:
+                self._sync_node_names_to_graph()
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self._node_drag_in_progress = True
         else:
@@ -228,6 +234,7 @@ class NodeEditor:
                 for c in self.connections
             )
             if not already_connected:
+                self._sync_node_names_to_graph()
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))  # Push before adding edge
                 # Add connection with empty label
                 conn = Connection(selected_node, clicked_node)
@@ -258,7 +265,8 @@ class NodeEditor:
             if node.dragging:
                 node.x = world_x - node.drag_offset[0]
                 node.y = world_y - node.drag_offset[1]
-                self.nx_graph.nodes[node.id]['pos'] = (node.x, node.y)
+                if node.id in self.nx_graph.nodes:
+                    self.nx_graph.nodes[node.id]['pos'] = (node.x, node.y)
         if self.panning_state.panning:
             self.panning_state.update_panning(
                 (x, y), self.zoom, PANNING_FOLLOWS_MOUSE
@@ -289,6 +297,7 @@ class NodeEditor:
     def try_delete_connection(self, world_x, world_y):
         for conn in list(self.connections):  # Use list() to allow removal during iteration
             if conn.is_clicked(world_x, world_y, zoom=self.zoom, tolerance=EDGE_CLICK_TOLERANCE):
+                self._sync_node_names_to_graph()
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.connections.remove(conn)
                 if self.nx_graph.has_edge(conn.start_node.id, conn.end_node.id):
@@ -306,6 +315,7 @@ class NodeEditor:
             if node.contains_point(world_x, world_y):
                 # Remove all connections to/from this node
                 self.connections.remove_connections_for_node(node)
+                self._sync_node_names_to_graph()
                 self.undo_stack.push(copy.deepcopy(self.nx_graph))
                 self.nodes.remove(node)
                 if node.id in self.nx_graph.nodes:
@@ -313,6 +323,12 @@ class NodeEditor:
                 node.selected = False  # Deselect the node if it was selected
                 return True
         return False
+
+    def _sync_node_names_to_graph(self):
+        # Ensure all node names are up-to-date in nx_graph before pushing to undo stack
+        for node in self.nodes:
+            if node.id in self.nx_graph.nodes:
+                self.nx_graph.nodes[node.id]['name'] = node.node_name
 
     def screen_to_world(self, pos):
         x, y = pos
@@ -325,3 +341,34 @@ class NodeEditor:
 
     def load_graph(self, filename="graph.gpickle"):
         self.graph_persistence.load_graph(filename)
+
+    def undo(self):
+        prev_graph = self.undo_stack.pop()
+        if prev_graph is not None:
+            self.nx_graph = prev_graph
+            # --- Synchronize self.nodes with nx_graph ---
+            # Build new node list from nx_graph
+            new_nodes = []
+            id_to_node = {}
+            for node_id, data in self.nx_graph.nodes(data=True):
+                x, y = data.get('pos', (0, 0))
+                node = Node(x, y, node_id)
+                node.node_name = data.get('name', node.node_name)
+                if hasattr(node, "invalidate_cache"):
+                    node.invalidate_cache()
+                new_nodes.append(node)
+                id_to_node[node_id] = node
+            self.nodes = new_nodes
+            # --- Restore connections from nx_graph ---
+            self.connections.clear()
+            for u, v, data in self.nx_graph.edges(data=True):
+                if u in id_to_node and v in id_to_node:
+                    label = data.get('label', "")
+                    conn = Connection(id_to_node[u], id_to_node[v], label=label)
+                    self.connections.append(conn)
+            # Update next_node_id
+            self.next_node_id = max([n.id for n in self.nodes], default=0) + 1
+            # Reset selection and drag state
+            self.selection.clear_selection(self.nodes)
+            self.marked_connection = None
+            self._node_drag_in_progress = False
