@@ -24,3 +24,8 @@ This is a pygame experiment to create node-graph based user interface.
 
 ## Open the folder in VSCode and start coding.
 <img src="docs/vscode_scr.png" height="240">
+
+## Tagging
+`git tag -a dev-0017a -m "description"`
+
+`git push origin dev-0017a`
