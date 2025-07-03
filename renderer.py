@@ -72,9 +72,11 @@ class NodeEditorRenderer:
         margin = 0
         r_size = 16 # size of the indicator rect
 
+        toolbar_width = self.editor.toolbar.width
+
         def is_node_visible(screen_x, screen_y):
             return (
-                TOOLBAR_WIDTH + margin < screen_x < screen_w - margin and
+                toolbar_width + margin < screen_x < screen_w - margin and
                 margin < screen_y < screen_h - margin
             )
 
@@ -84,7 +86,7 @@ class NodeEditorRenderer:
                 (node.y * self.editor.zoom) - self.editor.panning_state.offset_y * self.editor.zoom,
             )
 
-        center_x = TOOLBAR_WIDTH + (screen_w - TOOLBAR_WIDTH) // 2
+        center_x = toolbar_width + (screen_w - toolbar_width) // 2
         center_y = screen_h // 2
 
         for node in self.editor.nodes:
@@ -106,7 +108,7 @@ class NodeEditorRenderer:
             # Determine intersection with window edge
             if abs(dx) > abs(dy * (screen_w / screen_h)):
                 # Left/Right edge
-                edge_x = screen_w - margin if dx > 0 else TOOLBAR_WIDTH + margin
+                edge_x = screen_w - margin if dx > 0 else toolbar_width + margin
                 edge_y = center_y + (edge_x - center_x) * math.tan(angle)
             # Top/Bottom
             else:
