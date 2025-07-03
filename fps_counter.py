@@ -7,7 +7,7 @@ class FPSCounter:
         self.samples = deque(maxlen=maxlen)
         self.font = font or pygame.font.Font(None, 36)
         self.color = color
-        self.pos = pos
+        self.pos = pos  # Offset from bottom left: (x from left, y from bottom)
         self.maxlen = maxlen
         self.last_update = time.time()
         self.update_interval = update_interval
@@ -61,5 +61,9 @@ class FPSCounter:
             self._needs_redraw = False
 
         if self._rendered_surf:
-              # Hintergrund zeichnen
-            screen.blit(self._rendered_surf, self.pos)
+            x_offset, y_offset = self.pos
+            surf_rect = self._rendered_surf.get_rect()
+            screen_rect = screen.get_rect()
+            # Always stick to bottom-left: x from left, y from bottom
+            draw_pos = (x_offset, screen_rect.height - surf_rect.height - y_offset)
+            screen.blit(self._rendered_surf, draw_pos)

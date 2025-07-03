@@ -25,7 +25,8 @@ class NodeEditor:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Node Graph Editor")
         self.clock = pygame.time.Clock()
-        self.fps_counter = FPSCounter(pos=(0, self.screen.get_height()-40))
+        self.fps_offset = (8, 8)  # 8px from left and bottom
+        self.fps_counter = FPSCounter(pos=self.fps_offset)  # removed corner argument
         self.nx_graph = nx.DiGraph()
         self.nodes: List[Node] = []
         self.connections = ConnectionList()
@@ -37,7 +38,6 @@ class NodeEditor:
         self.toolbar = toolbar if toolbar else Toolbar()
         self.text_input_active = False
         self.visualizer = TextInputRenderer(font_color=WHITE,cursor_color=WHITE, engine=TextInputEngine())
-        self.fps_counter = FPSCounter(pos=(0, WINDOW_HEIGHT - 40))
         self._node_drag_in_progress = False  # Track if a node drag is in progress
         self.renderer = NodeEditorRenderer(self)  # Pass self or required state
         self.panning_state = CanvasPanning()
@@ -92,6 +92,8 @@ class NodeEditor:
 
     def _handle_resize(self, event):
         self.screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
+        # Update FPS counter position to always stick to bottom-left
+        self.fps_counter.pos = self.fps_offset
 
     def _handle_dropfile(self, event):
         file_path = event.file  # type: ignore
@@ -371,4 +373,5 @@ class NodeEditor:
             # Reset selection and drag state
             self.selection.clear_selection(self.nodes)
             self.marked_connection = None
+            self._node_drag_in_progress = False
             self._node_drag_in_progress = False
